@@ -24,8 +24,8 @@ public class Import {
 
         //Skapa ArrayList
         ArrayList<String>       fileRows    = new ArrayList<String>();
-        ArrayList<Prenumerant>  masterList  = new ArrayList<Prenumerant>();
-        ArrayList<Prenumerant>  rejectList  = new ArrayList<Prenumerant>();
+        ArrayList<Subscriber>  masterList  = new ArrayList<Subscriber>();
+        ArrayList<Subscriber>  rejectList  = new ArrayList<Subscriber>();
         
         
         // Kolla Importfolder och skapa lista med filer f�r import. 
@@ -78,7 +78,7 @@ public class Import {
 
        for (int i = 0; i < masterList.size(); i++) {
 
-           Prenumerant p = masterList.get(i);
+           Subscriber p = masterList.get(i);
 
            if (p.correctAdress()) {
 
@@ -112,8 +112,8 @@ public class Import {
        int up = 0; //Counter unique objects;
        int dp = 0; //Counter duplicate objects;
 
-       Prenumerant p1 = null;
-       Prenumerant p2 = null;
+       Subscriber p1 = null;
+       Subscriber p2 = null;
 
        for (int i = 0; i < masterList.size(); i++) {
 
@@ -127,8 +127,8 @@ public class Import {
 
                if (p1.getAbNr().length() >= 9) {
 
-                   if (p1.getTyp().contains("STUDENT")
-                       || p1.getTyp().contains("DOKTORAND")) {
+                   if (p1.getType().contains("STUDENT")
+                       || p1.getType().contains("DOKTORAND")) {
 
                        p2.setDistributor("D");
                        rejectList.add(p2);
@@ -166,7 +166,7 @@ public class Import {
        //Rensa noThanks
 
        // Create and Populate the ArraysList.
-       ArrayList<Prenumerant> noThanks = new ArrayList<Prenumerant>();
+       ArrayList<Subscriber> noThanks = new ArrayList<Subscriber>();
 
        ListHelpers.readFromFileToList(GetFile.noThanksFilePath, noThanks);
 
@@ -275,7 +275,7 @@ public class Import {
     
     
     public static void convertRows(ArrayList<String> fromArrayList, 
-                                   ArrayList<Prenumerant> toArrayList, 
+                                   ArrayList<Subscriber> toArrayList, 
                                    String sourceFile) {
         
         String  prenNr      = "",
@@ -323,7 +323,7 @@ public class Import {
         
         String fromRow, toRow;
         String[] rowFields;
-        Prenumerant prenumerant; 
+        Subscriber prenumerant; 
                 
         for (int i = 1; i < fromArrayList.size(); i++) {
         
@@ -383,7 +383,7 @@ public class Import {
             
             if (toRow.length() > 15) {
             
-                prenumerant = new Prenumerant(toRow);
+                prenumerant = new Subscriber(toRow);
 
                 toArrayList.add(prenumerant);
                 

@@ -70,7 +70,7 @@ public class Helpers {
 	 * 
 	 */
 
-	public static int _readFromFileToArray(File f, Prenumerant[] p) throws IOException {
+	public static int _readFromFileToArray(File f, Subscriber[] p) throws IOException {
 		int i = 0;
 
 		Scanner fin = new Scanner(f);
@@ -78,7 +78,7 @@ public class Helpers {
 		while (fin.hasNext()) {
 
 			String listRow = fin.nextLine();
-			p[i] = new Prenumerant(listRow);
+			p[i] = new Subscriber(listRow);
 
 			i++;
 
@@ -102,7 +102,7 @@ public class Helpers {
 	 * @return An int - The position of the Object in the Array if present.
 	 */
 
-	public static int binSearch(Prenumerant[] p, int n, String a) {
+	public static int binSearch(Subscriber[] p, int n, String a) {
 
 		int first = 0; // F�rsta index
 		int last = n - 1; // Sista index

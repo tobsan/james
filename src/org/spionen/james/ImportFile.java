@@ -7,8 +7,8 @@ import java.util.ArrayList;
 
 public abstract class ImportFile {
 	
-	public abstract ArrayList<Prenumerant> readFile(File file);
-	public ArrayList<Prenumerant> readFile(String filename) throws IOException, FileNotFoundException {
+	public abstract ArrayList<Subscriber> readFile(File file);
+	public ArrayList<Subscriber> readFile(String filename) throws IOException, FileNotFoundException {
 		File f = new File(filename);
 		// Check for common things
 		if(!f.isFile()) {
@@ -21,8 +21,8 @@ public abstract class ImportFile {
 		return readFile(f);
 	}
 	
-	public abstract void writeFile(ArrayList<Prenumerant> subscribers, File file);
-	public void writeFile(ArrayList<Prenumerant> subscribers, String filename) throws IOException, FileNotFoundException {
+	public abstract void writeFile(ArrayList<Subscriber> subscribers, File file);
+	public void writeFile(ArrayList<Subscriber> subscribers, String filename) throws IOException, FileNotFoundException {
 		File f = new File(filename);
 		if(!f.isFile()) {
 			throw new FileNotFoundException("Input is not a file: " + filename);

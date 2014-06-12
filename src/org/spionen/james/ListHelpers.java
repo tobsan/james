@@ -58,14 +58,14 @@ public class ListHelpers {
    }
            
     
-   public static void readFromFileToList(String filePath, ArrayList<Prenumerant> al) throws FileNotFoundException, IOException {
+   public static void readFromFileToList(String filePath, ArrayList<Subscriber> al) throws FileNotFoundException, IOException {
 
        BufferedReader fIn = new BufferedReader(new FileReader(filePath));
        String row = fIn.readLine();
-       Prenumerant p = null;
+       Subscriber p = null;
 
        while (row != null) {
-           p = new Prenumerant(row);
+           p = new Subscriber(row);
            al.add(p);
            row = fIn.readLine();
        }
@@ -83,7 +83,7 @@ public class ListHelpers {
     * @throws IOException
     */
    
-    public static void stateSaveListAsFile(ArrayList<Prenumerant> al, String filePath) throws IOException {
+    public static void stateSaveListAsFile(ArrayList<Subscriber> al, String filePath) throws IOException {
 
        Collections.sort(al);
        String targetFilePath = filePath;
@@ -103,7 +103,7 @@ public class ListHelpers {
    }
 
 
-    public static int searchListForAbNr(ArrayList<Prenumerant> al, String a) {
+    public static int searchListForAbNr(ArrayList<Subscriber> al, String a) {
 
         int first = 0;                  // Första index
         int last = al.size() - 1;       // Sista index
@@ -136,7 +136,7 @@ public class ListHelpers {
     * @throws IOException
     */
 
-    public static void exportListForVTAB(ArrayList<Prenumerant> al, String filePath) throws IOException {
+    public static void exportListForVTAB(ArrayList<Subscriber> al, String filePath) throws IOException {
 
        Collections.sort(al);
        String targetFilePath = filePath;
@@ -165,7 +165,7 @@ public class ListHelpers {
     * @throws IOException
     */
 
-    public static void exportListAsTB(ArrayList<Prenumerant> startList, ArrayList<Prenumerant> stopList,  
+    public static void exportListAsTB(ArrayList<Subscriber> startList, ArrayList<Subscriber> stopList,  
                                         String filePath, String distributionsdatum) throws IOException {
 
        Collections.sort(startList);
@@ -221,7 +221,7 @@ public class ListHelpers {
     * @throws IOException
     */
 
-    public static void exportListForVTD(ArrayList<Prenumerant> al, String filePath) throws IOException {
+    public static void exportListForVTD(ArrayList<Subscriber> al, String filePath) throws IOException {
 
        Collections.sort(al);
        String targetFilePath = filePath;
@@ -261,7 +261,7 @@ public class ListHelpers {
        
        String masterFilePath    = GetFile.currentMaster(year, issue);
 
-       ArrayList<Prenumerant> master         = new ArrayList<Prenumerant>();
+       ArrayList<Subscriber> master         = new ArrayList<Subscriber>();
        ListHelpers.readFromFileToList(masterFilePath, master);
 
         int i = 0;
@@ -273,7 +273,7 @@ public class ListHelpers {
         int no       = 0;
         int special  = 0; 
         
-        Prenumerant p = null; //Temp-object
+        Subscriber p = null; //Temp-object
         String d = "";
         int l = 0;
         

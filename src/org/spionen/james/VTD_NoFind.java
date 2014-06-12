@@ -26,8 +26,8 @@ public class VTD_NoFind
         String notForVTDFilePath = GetFile.notForVTDFilePath;
 
         //Create and populate Lists
-        ArrayList<Prenumerant> master       = new ArrayList<Prenumerant>();
-        ArrayList<Prenumerant> notForVTD    = new ArrayList<Prenumerant>();
+        ArrayList<Subscriber> master       = new ArrayList<Subscriber>();
+        ArrayList<Subscriber> notForVTD    = new ArrayList<Subscriber>();
 
         ListHelpers.readFromFileToList(masterFilePath, master);
         ListHelpers.readFromFileToList(notForVTDFilePath, notForVTD);
@@ -53,8 +53,8 @@ public class VTD_NoFind
 
             if (index >= 0) {
 
-                Prenumerant p = master.get(index);
-                String postNr = p.getPostNr();
+                Subscriber p = master.get(index);
+                String postNr = p.getZipCode();
 
                 JOptionPane.showMessageDialog(null, "Prenumerant: "
                             + p.getFullName());
@@ -144,8 +144,8 @@ public class VTD_NoFind
                 JOptionPane.showMessageDialog(null, "Jag b�rjar kolla igenom listan. Den inneh�ller " + vtdMissar.size() + " rader s� ha lite t�lamod.");
                 
                 // �ppna referensfilerna.
-                ArrayList<Prenumerant> master       = new ArrayList<Prenumerant>();
-                ArrayList<Prenumerant> notForVTD    = new ArrayList<Prenumerant>();
+                ArrayList<Subscriber> master       = new ArrayList<Subscriber>();
+                ArrayList<Subscriber> notForVTD    = new ArrayList<Subscriber>();
 
                 ListHelpers.readFromFileToList(masterFilePath, master);
                 ListHelpers.readFromFileToList(notForVTDFilePath, notForVTD);
@@ -166,8 +166,8 @@ public class VTD_NoFind
                         
                         found++; 
 
-                        Prenumerant p = master.get(index);
-                        String postNr = p.getPostNr();
+                        Subscriber p = master.get(index);
+                        String postNr = p.getZipCode();
 
                         if (Filter.checkIfInRange(postNr, filterBring)) {
                             p.setDistributor("B");

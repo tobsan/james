@@ -35,8 +35,8 @@ public class Exporter {
         // Log status
         Helpers.logStatusMessage("Preparing Master for Export - Started.");
 
-        ArrayList<Prenumerant> master       = new ArrayList<Prenumerant>();
-        ArrayList<Prenumerant> notForVTD    = new ArrayList<Prenumerant>();
+        ArrayList<Subscriber> master       = new ArrayList<Subscriber>();
+        ArrayList<Subscriber> notForVTD    = new ArrayList<Subscriber>();
 
         ListHelpers.readFromFileToList(masterFilePath, master);
         ListHelpers.readFromFileToList(notForVTDFilePath, notForVTD);
@@ -44,7 +44,7 @@ public class Exporter {
         System.out.println("Master AL best�r av: " + master.size() + " Objekt.");
 
         //Placeholder Prenumerant
-        Prenumerant pren = null;
+        Subscriber pren = null;
 
         // Filter Addresses
 
@@ -57,7 +57,7 @@ public class Exporter {
         for (int i = 0; i < master.size(); i++) {
 
             pren = master.get(i);
-            String postNr = pren.getPostNr();
+            String postNr = pren.getZipCode();
 
             if (!pren.getDistributor().equals("N")) {
                 if (pren.isOKforPaperRoute()) {
@@ -98,7 +98,7 @@ public class Exporter {
             if (index >= 0) {
 
                 pren = master.get(index);
-                String postNr = pren.getPostNr();
+                String postNr = pren.getZipCode();
 
                 if (!pren.getDistributor().equals("N")) {
 
@@ -206,10 +206,10 @@ public class Exporter {
 
         String today = Helpers.todaysDate();
 
-        ArrayList<Prenumerant> master         = new ArrayList<Prenumerant>();
-        ArrayList<Prenumerant> prevMaster     = new ArrayList<Prenumerant>();
-        ArrayList<Prenumerant> vtdStart       = new ArrayList<Prenumerant>();
-        ArrayList<Prenumerant> vtdStopp       = new ArrayList<Prenumerant>();
+        ArrayList<Subscriber> master         = new ArrayList<Subscriber>();
+        ArrayList<Subscriber> prevMaster     = new ArrayList<Subscriber>();
+        ArrayList<Subscriber> vtdStart       = new ArrayList<Subscriber>();
+        ArrayList<Subscriber> vtdStopp       = new ArrayList<Subscriber>();
 
         ListHelpers.readFromFileToList(masterFilePath, master);
         ListHelpers.readFromFileToList(GetFile.previousMaster(year, issue), prevMaster);
@@ -217,7 +217,7 @@ public class Exporter {
         // Clear non VTD entrys from both arrays.
 
         int i = 0; //counter
-        Prenumerant p = null; //Temp-object
+        Subscriber p = null; //Temp-object
 
         System.out.println("Array-Size = " + master.size() + " CM-Size(Total)");
 
@@ -243,7 +243,7 @@ public class Exporter {
             i++;
         }
         System.out.println("Array-Size = " + prevMaster.size() + " PM-Size(VTD)");
-        Prenumerant pNew, pOld;
+        Subscriber pNew, pOld;
         pNew = null;
         pOld = null;
 
@@ -312,10 +312,10 @@ public class Exporter {
         Helpers.makeSureFolderExists(exportFolder);
         String today = Helpers.todaysDate();
 
-        ArrayList<Prenumerant> master         = new ArrayList<Prenumerant>();
-        ArrayList<Prenumerant> prevMaster     = new ArrayList<Prenumerant>();
-        ArrayList<Prenumerant> tbStart       = new ArrayList<Prenumerant>();
-        ArrayList<Prenumerant> tbStopp       = new ArrayList<Prenumerant>();
+        ArrayList<Subscriber> master         = new ArrayList<Subscriber>();
+        ArrayList<Subscriber> prevMaster     = new ArrayList<Subscriber>();
+        ArrayList<Subscriber> tbStart       = new ArrayList<Subscriber>();
+        ArrayList<Subscriber> tbStopp       = new ArrayList<Subscriber>();
 
         ListHelpers.readFromFileToList(masterFilePath, master);
 //        ListHelpers.readFromFileToList(previousIssueMasterFilePath, prevMaster);
@@ -323,7 +323,7 @@ public class Exporter {
         // Clear non TB entrys from both arrays.
 
         int i = 0; //counter
-        Prenumerant p = null; //Temp-object
+        Subscriber p = null; //Temp-object
 
         System.out.println("Array-Size = " + master.size() + " CM-Size(Total)");
 
@@ -350,7 +350,7 @@ public class Exporter {
         }
 
         System.out.println("Array-Size = " + prevMaster.size() + " PM-Size(TB)");
-        Prenumerant pNew, pOld;
+        Subscriber pNew, pOld;
         pNew = null;
         pOld = null;
 
@@ -417,8 +417,8 @@ public class Exporter {
         //Check if Exportfolder-exists and create it if it doesen't
         Helpers.makeSureFolderExists(exportFolder);
 
-        ArrayList<Prenumerant> master       = new ArrayList<Prenumerant>();
-        ArrayList<Prenumerant> export       = new ArrayList<Prenumerant>();
+        ArrayList<Subscriber> master       = new ArrayList<Subscriber>();
+        ArrayList<Subscriber> export       = new ArrayList<Subscriber>();
         ListHelpers.readFromFileToList(masterFilePath, master);
 
         int b = 0; //Bring Counter
@@ -458,8 +458,8 @@ public class Exporter {
         //Check if Exportfolder-exists and create it if it doesen't
         Helpers.makeSureFolderExists(exportFolder);
 
-        ArrayList<Prenumerant> master       = new ArrayList<Prenumerant>();
-        ArrayList<Prenumerant> export       = new ArrayList<Prenumerant>();
+        ArrayList<Subscriber> master       = new ArrayList<Subscriber>();
+        ArrayList<Subscriber> export       = new ArrayList<Subscriber>();
         ListHelpers.readFromFileToList(masterFilePath, master);
 
         int b = 0; //Bring Counter
@@ -492,8 +492,8 @@ public class Exporter {
  
         //Check if Exportfolder-exists and create it if it doesen't
         Helpers.makeSureFolderExists(exportFolder);
-        ArrayList<Prenumerant> master       = new ArrayList<Prenumerant>();
-        ArrayList<Prenumerant> export       = new ArrayList<Prenumerant>();
+        ArrayList<Subscriber> master       = new ArrayList<Subscriber>();
+        ArrayList<Subscriber> export       = new ArrayList<Subscriber>();
 
         ListHelpers.readFromFileToList(masterFilePath, master);
 
@@ -527,8 +527,8 @@ public class Exporter {
         //Check if Exportfolder-exists and create it if it doesen't
         Helpers.makeSureFolderExists(exportFolder);
  
-        ArrayList<Prenumerant> master       = new ArrayList<Prenumerant>();
-        ArrayList<Prenumerant> export       = new ArrayList<Prenumerant>();
+        ArrayList<Subscriber> master       = new ArrayList<Subscriber>();
+        ArrayList<Subscriber> export       = new ArrayList<Subscriber>();
 
         ListHelpers.readFromFileToList(masterFilePath, master);
 

@@ -23,8 +23,8 @@ public class NoThanks
         String noThanksFilePath = GetFile.noThanksFilePath;
         
         //Create and popupate Lists
-        ArrayList<Prenumerant> master       = new ArrayList<Prenumerant>();
-        ArrayList<Prenumerant> noThanks     = new ArrayList<Prenumerant>();
+        ArrayList<Subscriber> master       = new ArrayList<Subscriber>();
+        ArrayList<Subscriber> noThanks     = new ArrayList<Subscriber>();
 
         ListHelpers.readFromFileToList(masterFilePath, master);
         ListHelpers.readFromFileToList(noThanksFilePath, noThanks);
@@ -42,7 +42,7 @@ public class NoThanks
 
             int index = ListHelpers.searchListForAbNr(master, abNr);
             if (index >= 0) {
-                Prenumerant p = master.get(index);
+                Subscriber p = master.get(index);
                 JOptionPane.showMessageDialog(null, "Prenumerant: " + p.getFullName());
 
                 System.out.println(p.masterFormat());
