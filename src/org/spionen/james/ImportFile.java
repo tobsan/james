@@ -24,13 +24,13 @@ public abstract class ImportFile {
 	public abstract void writeFile(ArrayList<Subscriber> subscribers, File file);
 	public void writeFile(ArrayList<Subscriber> subscribers, String filename) throws IOException, FileNotFoundException {
 		File f = new File(filename);
-		if(!f.isFile()) {
-			throw new FileNotFoundException("Input is not a file: " + filename);
-		} else if(!f.exists()) {
-			throw new FileNotFoundException("The file does not exist: " + filename);
-		} else if(!f.canWrite()) {
-			throw new IOException("Can't write to file: " + filename);
+		if(!f.exists()) {
+			boolean b = f.createNewFile();
+			if(!b || !f.canWrite()) {
+				throw new IOException("Can't write to file: " + filename);
+			}
 		}
+		System.out.println("Writing subscribers to " + filename);
 		writeFile(subscribers, f);
 	}
 	
@@ -52,9 +52,45 @@ public abstract class ImportFile {
 		return ft;
 	}
 	
+	public String getByField(FieldType ft, Subscriber s) {
+		switch(ft) {
+		case SubscriberID: return s.getAbNr();
+		case FirstName: return s.getFirstName();
+		case LastName: return s.getLastName();
+		case CoAddress: return s.getCoAddress();
+		case Address: return s.getStreetAddress();
+		case ZipCode: return s.getZipCode();
+		case City: return s.getCity();
+		case Country: return s.getCountry();
+		case Category: return s.getType();
+		case Distributor: return s.getDistributor();
+		case Note: return s.getNote();
+		default: return s.getNote();
+		}
+	}
+	
+	public void setByField(FieldType ft, Subscriber s, String data) {
+		switch(ft) {
+		case SubscriberID: s.setAbNr(data); break;
+		case FirstName: s.setFirstName(data); break;
+		case LastName: s.setLastName(data); break;
+		case CoAddress: s.setCoAddress(data); break;
+		case Address: s.setStreetAddress(data); break;
+		case ZipCode: s.setZipCode(data); break;
+		case City: s.setCity(data); break;
+		case Country: s.setCountry(data);
+		case Category: s.setType(data); break;
+		case Distributor: s.setDistributor(data); break;
+		case Note: s.setNote(data); break;
+		default: return; // Discard anything else
+		}		
+	}
+	
 	public FieldType getFieldType(String str) {
 		switch(str.toLowerCase()) {
 		case "pnr":
+		case "prenumerantid":
+		case "prennr":
 		case "personnummer":
 			return FieldType.SubscriberID;
 		case "namn":
@@ -76,6 +112,7 @@ public abstract class ImportFile {
 			return FieldType.ZipCode;
 		case "ort":
 		case "postort":
+		case "stad":
 			return FieldType.City;
 		case "land": return FieldType.Country;
 		case "distributör": return FieldType.Distributor;
@@ -88,17 +125,26 @@ public abstract class ImportFile {
 	}
 	
 	public enum FieldType {
-		SubscriberID,
-		FirstName,
-		LastName,
-		CoAddress,
-		Address,
-		ZipCode,
-		City,
-		Country,
-		Distributor,
-		Category,
-		Note,
-		Unknown
+		SubscriberID ("PrenumerantID"),
+		FirstName ("Förnamn"),
+		LastName ("Efternamn"),
+		CoAddress ("c/o"),
+		Address ("Adress"),
+		ZipCode ("Postnummer"),
+		City ("Stad"),
+		Country ("Land"),
+		Distributor ("Distributör"),
+		Category ("Kategori"),
+		Note ("Note"),
+		Unknown ("Unknown field");
+		
+		private String desc;
+		private FieldType(String desc) {
+			this.desc = desc;
+		}
+		
+		public String getDesc() {
+			return desc;
+		}
 	};
 }

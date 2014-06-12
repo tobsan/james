@@ -39,6 +39,10 @@ public class Subscriber implements Comparable<Subscriber>
         
         sc.close();
     }
+    
+    public Subscriber() {
+    	// Empty
+    }
 
     public String getAbNr() {
 		return abNr;
