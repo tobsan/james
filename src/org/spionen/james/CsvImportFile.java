@@ -8,13 +8,13 @@ import java.util.ArrayList;
 public class CsvImportFile extends ImportFile {
 
 	@Override
-	public ArrayList<Prenumerant> readFile(File file) {
+	public ArrayList<Subscriber> readFile(File file) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public void writeFile(ArrayList<Prenumerant> subscribers, File file) {
+	public void writeFile(ArrayList<Subscriber> subscribers, File file) {
 		// TODO Auto-generated method stub
 
 	}

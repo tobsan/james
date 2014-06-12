@@ -42,6 +42,16 @@ public abstract class ImportFile {
 		return ft;
 	}
 	
+	public FieldType[] standardOrder() {
+		FieldType[] ft = { 
+				FieldType.SubscriberID, FieldType.FirstName, FieldType.LastName, 
+				FieldType.CoAddress, FieldType.Address, FieldType.ZipCode, 
+				FieldType.City, FieldType.Country, FieldType.Category,
+				FieldType.Distributor, FieldType.Note
+		};
+		return ft;
+	}
+	
 	public FieldType getFieldType(String str) {
 		switch(str.toLowerCase()) {
 		case "pnr":
@@ -54,6 +64,10 @@ public abstract class ImportFile {
 		case "efternamn":
 		case "enamn":
 			return FieldType.LastName;
+		case "c/o":
+		case "c / o":
+		case "coadress":
+			return FieldType.CoAddress;
 		case "adress":
 		case "gatuadress":
 			return FieldType.Address;
@@ -77,6 +91,7 @@ public abstract class ImportFile {
 		SubscriberID,
 		FirstName,
 		LastName,
+		CoAddress,
 		Address,
 		ZipCode,
 		City,
