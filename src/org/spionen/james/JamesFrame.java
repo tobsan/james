@@ -34,8 +34,8 @@ public class JamesFrame extends JFrame {
 	private JTextField issueYearField;
 	private JLabel issueNumber;
 	private JTextField issueNumberField;
-	private JButton createIssue;
-	private JButton getIssue;
+	private JButton createIssueButton;
+	private JButton getIssueButton;
 	// Import
 	private JPanel importPanel;
 	private JButton addressBaseButton;
@@ -101,8 +101,8 @@ public class JamesFrame extends JFrame {
 		issueNumber = new JLabel ("Nummer (N)");
 		issueNumberField = new JTextField("  1  ");
 		issueNumberField.setHorizontalAlignment(JTextField.CENTER);
-		createIssue = new JButton("Skapa angivet nummer");
-		getIssue = new JButton("Hämta angivet nummer");
+		createIssueButton = new JButton("Skapa angivet nummer");
+		getIssueButton = new JButton("Hämta angivet nummer");
 		c.gridx = 0;
 		c.gridy = 0;
 		issuePanel.add(issueYear, c);
@@ -115,9 +115,9 @@ public class JamesFrame extends JFrame {
 		c.gridy = 1;
 		c.gridx = 0;
 		c.gridwidth = 2;
-		issuePanel.add(createIssue,c);
+		issuePanel.add(createIssueButton,c);
 		c.gridx = 2;
-		issuePanel.add(getIssue, c);
+		issuePanel.add(getIssueButton, c);
 		c.gridwidth = 1;
 		// The import panel
 		importPanel = new JPanel();
@@ -208,6 +208,22 @@ public class JamesFrame extends JFrame {
 		// Internal stuff
 		setContentPane(mainPanel);
 		pack();
+	}
+	
+	public int getYear() {
+		return Integer.parseInt(issueYearField.getText());
+	}
+	
+	public int getIssue() {
+		return Integer.parseInt(issueNumberField.getText());
+	}
+	
+	public void addCreateIssueListener(ActionListener al) {
+		createIssueButton.addActionListener(al);
+	}
+	
+	public void addGetIssueListener(ActionListener al) {
+		getIssueButton.addActionListener(al);
 	}
 	
 	public void addAddressListener(ActionListener al) {
