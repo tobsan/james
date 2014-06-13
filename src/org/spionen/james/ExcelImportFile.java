@@ -36,7 +36,7 @@ public class ExcelImportFile extends ImportFile {
 			}
 			// Then iterate through the rest of the rows
 			if(s.getLastRowNum() > 0) {
-				// LastRowNum is 0-indexed
+				// LastRowNum is 0-indexed, so add 1
 				for(int i = 1; i < s.getLastRowNum()+1; i++) {
 					Row r = s.getRow(i);
 					Subscriber sub = new Subscriber();

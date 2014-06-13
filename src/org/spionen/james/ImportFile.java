@@ -65,8 +65,8 @@ public abstract class ImportFile {
 		case Category: return s.getType();
 		case Distributor: return s.getDistributor();
 		case Note: return s.getNote();
-		default: return s.getNote();
 		}
+		return "";
 	}
 	
 	public void setByField(FieldType ft, Subscriber s, String data) {
@@ -119,7 +119,9 @@ public abstract class ImportFile {
 		case "typ":
 		case "kategori":
 			return FieldType.Category;
-		case "not": return FieldType.Note;
+		case "not":
+		case "note": 
+			return FieldType.Note;
 		default: return FieldType.Unknown;
 		}
 	}
@@ -145,6 +147,11 @@ public abstract class ImportFile {
 		
 		public String getDesc() {
 			return desc;
+		}
+		
+		@Override
+		public String toString() {
+			return getDesc();
 		}
 	};
 }
