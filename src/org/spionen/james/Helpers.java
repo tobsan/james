@@ -368,7 +368,7 @@ public class Helpers {
 		ArrayList<MasterFile> masterFiles = Helpers.makeArrayListFromPath(path);
 		MasterFile latest = Helpers.latestFileInList(masterFiles);
 
-		return latest.getNumber() + "";
+		return latest.getIssue() + "";
 }
 
 	public static int latestIssueYearInt() {

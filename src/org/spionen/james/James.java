@@ -48,7 +48,7 @@ public class James {
 				int year = jf.getYear();
 				int issue = jf.getIssue();
 				try {
-					Import.importAll(year, issue);
+					Importer.importAll(year, issue);
 				} catch(IOException ioe) {
 					ioe.printStackTrace();
 				}

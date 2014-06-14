@@ -9,57 +9,81 @@ public class MasterFile implements Comparable<MasterFile> {
     
     // Instance variables
     private int year; 
-    private int number; 
+    private int issue; 
     private String fileName; 
+    private State state;
     
     // Constructors
     public MasterFile(String masterFileName) {
         
         year = Integer.parseInt(masterFileName.split("[-_.]")[0]);
-        number = Integer.parseInt(masterFileName.split("[-_.]")[1]);
+        issue = Integer.parseInt(masterFileName.split("[-_.]")[1]);
         fileName = masterFileName; 
     }
     
-    //Accessors
-    public int getYear() {return year;}
-    public int getNumber() {return number;}    
-    public String getFileName() {return fileName;}
+    public MasterFile(int year, int issue) {
+    	this.year = year;
+    	this.issue = issue;
+    	this.fileName = year + "-" + issue + "_Master.txt"; 
+    	this.state = State.Init;
+    }
+    
+    public int getYear() { return year; }
+    public int getIssue() { return issue; }    
+    public String getFileName() { return fileName; }
+    
+    public State getState() { return state; }
+    public void nextState() {
+    	State[] allStates = State.values();
+    	for(int i=0; i < allStates.length; i++) {
+    		if(state == allStates[i] && i+1 < allStates.length) {
+    			state = allStates[i+1];
+    		}
+    	}
+    }
+    
+    public void prevState() {
+    	State[] allStates = State.values();
+    	for(int i = allStates.length; i > 0; i++) {
+    		if(state == allStates[i] && i-1 > -1) {
+    			state = allStates[i-1];
+    		}
+    	}
+    }
     
     public String getDescription() {
-        return "Nr. " + number + " " + year;
+        return "Nr. " + issue + " " + year;
     }
     
     public MasterFile nextIssue() {
-        int yyyy; //next Issue Year 
-        int n; //next Issue number
-        
-        if (number < 8) {
-            yyyy = year;
-            n = number + 1; 
+        if (issue < 8) {
+        	return new MasterFile(year, issue+1);
         } else {
-            yyyy = year + 1;
-            n = 1; 
+        	return new MasterFile(year+1, 1);
         }
-        return new MasterFile(yyyy + "-" + n + "_Master.txt"); 
     }
     
     public MasterFile previousIssue() {
-        int yyyy; //previous Issue Year 
-        int n; //previous Issue number
-        
-        if (number > 1) {
-            yyyy = year;
-            n = number - 1; 
+        if (issue > 1) {
+        	return new MasterFile(year, issue-1);
         } else {
-            yyyy = year - 1;
-            n = 8; 
+        	return new MasterFile(year-1, 8);
         }
-        return new MasterFile(yyyy + "-" + n + "_Master.txt");
     }
     
     @Override 
     public int compareTo(MasterFile mf) {
         return this.getFileName().compareTo(mf.getFileName());
     }
+    
+    public enum State {
+    	Init,
+    	GotSource,
+    	FirstVTD_TB,
+    	GotFirstMiss,
+    	SecondVTD_TB,
+    	GotSecondMiss,
+    	Finalised
+    };
     
 }
