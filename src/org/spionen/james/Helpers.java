@@ -24,6 +24,11 @@ public class Helpers {
 		return pNr;
 	}
 
+	/**
+	 * TODO: Lol what?
+	 * @param row
+	 * @return
+	 */
 	public static String cleanRow(String row) {
 
 		row = row.replaceAll("�", "�");
@@ -223,12 +228,10 @@ public class Helpers {
 	 */
 
 	public static void _replace_OldFile_with_NewFile(String oldFile, String newFile) {
-
 		File oldSource = new File(oldFile);
 		File newSource = new File(newFile);
 		oldSource.delete();
 		newSource.renameTo(oldSource);
-
 	}
 
 	/**
@@ -277,13 +280,12 @@ public class Helpers {
 
 	// TODO Write Doc for checkIfStringIsNumeric
 	public static boolean checkIfStringIsNumeric(String theString) {
-
 		try {
-			double d = Double.parseDouble(theString);
+			Double.parseDouble(theString);
+			return true;
 		} catch (NumberFormatException nfe) {
 			return false;
 		}
-		return true;
 	}
 
 	/**

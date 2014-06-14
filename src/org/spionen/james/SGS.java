@@ -1,14 +1,9 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.spionen.james;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import javax.swing.JOptionPane;
 
@@ -44,19 +39,18 @@ public class SGS {
         
         String row;
         String[] rowFields;
-        String gatuAdress   = null, 
-               adressSpec   = null, 
-               postNr       = null, 
-               pOrt         = null;
-        
+        String gatuAdress   = null;
+        String adressSpec   = null; 
+        String postNr       = null; 
+        String pOrt         = null;
         
         for (int i = 1; i < fileContent.size(); i++) {
         
             row = fileContent.get(i).toUpperCase();
             rowFields = row.split(";");
-            if (row.contains(" L�G")) {
-                gatuAdress = rowFields[0].split(" L�G")[0].trim();
-                adressSpec = "L�G " + rowFields[0].split(" L�G")[1].trim();
+            if (row.contains(" LÄG")) {
+                gatuAdress = rowFields[0].split(" LÄG")[0].trim();
+                adressSpec = "LÄG " + rowFields[0].split(" LÄG")[1].trim();
             } else {
                 if (row.contains(" RUM ")) {
                     gatuAdress = rowFields[0].split(" RUM ")[0].trim();
@@ -64,10 +58,10 @@ public class SGS {
                 } else {
                     if (row.contains("/")) {
                         gatuAdress = rowFields[0].split("/")[0].trim();
-                        adressSpec = "L�G " + rowFields[0].split("/")[1].trim();
+                        adressSpec = "LÄG " + rowFields[0].split("/")[1].trim();
                     } else {
                         JOptionPane.showMessageDialog(null, "Jag kollar igenom SGS adresser.\n"+
-                                "Denna adressraden ("+row+")\n �r felaktig. V�nligen korrigera den och f�rs�k igen.");
+                                "Denna adressraden ("+row+")\n är felaktig. Vänligen korrigera den och försök igen.");
                     }
                 }
             }
@@ -90,7 +84,7 @@ public class SGS {
             sgsLista.add(sgsAdress);
         }
         
-        System.out.println("SGS-listan inneh�ller " + sgsLista.size() + " unika adresser.");
+        System.out.println("SGS-listan innehåller " + sgsLista.size() + " unika adresser.");
         System.out.println(sgsLista.get(1).getAll());
         Collections.sort(sgsLista);
         System.out.println(sgsLista.get(1).getAll());

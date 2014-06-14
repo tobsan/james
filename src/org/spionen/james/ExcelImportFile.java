@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
@@ -13,8 +14,8 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 public class ExcelImportFile extends ImportFile {
 
-	public ArrayList<Subscriber> readFile(File file) { 
-		ArrayList<Subscriber> subscribers = new ArrayList<Subscriber>();
+	public List<Subscriber> readFile(File file) { 
+		List<Subscriber> subscribers = new ArrayList<Subscriber>();
 		try {
 			Workbook wb = WorkbookFactory.create(file);
 			Sheet s = wb.getSheetAt(0);
@@ -62,7 +63,7 @@ public class ExcelImportFile extends ImportFile {
 		}
 	}
 
-	public void writeFile(ArrayList<Subscriber> subscribers, File file) {
+	public void writeFile(List<Subscriber> subscribers, File file) {
 		Workbook wb;
 		try {
 			wb = WorkbookFactory.create(file);
@@ -113,7 +114,7 @@ public class ExcelImportFile extends ImportFile {
 		String input = "/home/gargravarr/workspace/james/test2.xls";
 		String output = "/home/gargravarr/workspace/james/test2.xls";
 		ExcelImportFile im = new ExcelImportFile();
-		ArrayList<Subscriber> ps = im.readFile(input);
+		List<Subscriber> ps = im.readFile(input);
 		for(Subscriber s : ps) {
 			System.out.println(s.vtdFormat());
 		}

@@ -21,6 +21,7 @@ import javax.swing.SwingConstants;
  */
 public class JamesFrame extends JFrame {
 
+	private static final long serialVersionUID = -5877293779273173169L;
 	private JPanel mainPanel;
 	
 	// James logotype
@@ -63,7 +64,7 @@ public class JamesFrame extends JFrame {
 	}
 	
 	/**
-	 * Initialize all graphical components
+	 * Initialise all graphical components
 	 */
 	private void initComponents() {
 		GridBagConstraints c = new GridBagConstraints();

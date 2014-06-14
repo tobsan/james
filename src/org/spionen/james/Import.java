@@ -39,16 +39,16 @@ public class Import {
                
             System.out.println(listOfFilesInFolder.get(i));
             
-            // Kollar upp filens namn s� k�llan kan anges i masterfilen
+            // Kollar upp filens namn så källan kan anges i masterfilen
             String fileName = listOfFilesInFolder.get(i).getName();       
             fileName = fileName.substring(0, fileName.indexOf("."));
                  
             ListHelpers.copyRows(listOfFilesInFolder.get(i), fileRows);
             
-            // Snygga till s� alla rader har lika m�nga f�lt
+            // Snygga till så alla rader har lika många fält
             fileRows = justifyRows(fileRows);
             
-            // Konvertera raderna och �verf�ra till masterList
+            // Konvertera raderna och överföra till masterList
             convertRows(fileRows, masterList, fileName);
             fileRows.clear();
             
@@ -95,11 +95,11 @@ public class Import {
 
        }
 
-       System.out.println("Master AL st�dad. " + cc + " Korrekta, " +
+       System.out.println("Master AL städad. " + cc + " Korrekta, " +
                                                  ic + " inkorrekta");
 
-       System.out.println("Master AL best�r av: " + masterList.size() + " Objekt.");
-       System.out.println("Rejects AL best�r av: " + rejectList.size() + " Objekt.");
+       System.out.println("Master AL består av: " + masterList.size() + " Objekt.");
+       System.out.println("Rejects AL består av: " + rejectList.size() + " Objekt.");
 
        // Log Status
        Helpers.logStatusMessage("Cleaning Master: Incomplete Rows - Finished.");
@@ -151,11 +151,11 @@ public class Import {
        } // END For-loop
 
 
-       System.out.println("Master AL st�dad. " + up + " unika, " +
+       System.out.println("Master AL städad. " + up + " unika, " +
                                                  dp + " dubletter");
 
-       System.out.println("Master AL best�r av: " + masterList.size() + " Objekt.");
-       System.out.println("Rejects AL best�r av: " + rejectList.size() + " Objekt.");
+       System.out.println("Master AL består av: " + masterList.size() + " Objekt.");
+       System.out.println("Rejects AL består av: " + rejectList.size() + " Objekt.");
 
        // Log Status
        Helpers.logStatusMessage("Cleaning Master: Duplicate Rows - Finished.");
@@ -172,7 +172,7 @@ public class Import {
 
        int nc = 0; //NoThanks counter.
 
-       System.out.println("NoThanks AL best�r av: " + noThanks.size() + " Objekt.");
+       System.out.println("NoThanks AL består av: " + noThanks.size() + " Objekt.");
 
 
        for (int i = 0; i < noThanks.size(); i++) {
@@ -191,9 +191,9 @@ public class Import {
        }
 
        System.out.println("No Thanks = " + nc);
-       System.out.println("Master AL best�r av: " + masterList.size() + " Objekt.");
-       System.out.println("Rejects AL best�r av: " + rejectList.size() + " Objekt.");
-       System.out.println("NoThanks AL best�r av: " + noThanks.size() + " Objekt.");
+       System.out.println("Master AL består av: " + masterList.size() + " Objekt.");
+       System.out.println("Rejects AL består av: " + rejectList.size() + " Objekt.");
+       System.out.println("NoThanks AL består av: " + noThanks.size() + " Objekt.");
 
        // Log Status
        Helpers.logStatusMessage("Filter Master: NoThanks-List - Started.");
@@ -207,7 +207,7 @@ public class Import {
 //       ListHelpers.stateSaveListAsFile(rejectList, rejectsFilePath);
        ListHelpers.stateSaveListAsFile(rejectList, GetFile.rejects(year, issue));
 
-       System.out.println("Master AL best�r av: " + masterList.size() + " Objekt.");
+       System.out.println("Master AL består av: " + masterList.size() + " Objekt.");
 
        // Log Status
        Helpers.logStatusMessage("Saving Files: Finished.");
@@ -222,55 +222,35 @@ public class Import {
         int nrOfFields = 0;
         int high = -100; 
         String row; 
-
-        
-        // Ta reda p� hur m�nga f�lt det finns i l�ngsta raden 
+        // Ta reda på hur många fält det finns i längsta raden 
         
         for (int i = 0; i < inArrayList.size(); i++) {
-
             row = inArrayList.get(i);
-            
             // Making sure all rows end with ; 
             if (!(row.endsWith(";"))) {row = row + ";";}
-            
             // Getting the number of fields in row
             nrOfFields = Helpers.numberOfFieldsInRow(row, ";");
-
-            if (nrOfFields > high) {high = nrOfFields;}
-
+            if (nrOfFields > high) {
+            	high = nrOfFields;
+            }
         }
-
         // Se till att alla rader har samma antal f�lt
     
         for (int i = 0; i < inArrayList.size(); i++) {
-
             row = inArrayList.get(i); 
             nrOfFields = Helpers.numberOfFieldsInRow(row, ";");
 
             if (nrOfFields < high) {
-
                 for (int y = nrOfFields; y < high; y++) {
-
                     row = row + ";";
-
                 }
-
             }
-
-            
             //System.out.println(row);
-            
             row = row.replaceAll(";;", "; ;");
-            
             //System.out.println(row);
-            
-            
             inArrayList.set(i, row);
-
         }
-        
         return inArrayList; 
-    
     }
     
     
@@ -309,7 +289,6 @@ public class Import {
         indexOf_postNr      = findIndexOf("postNr", indexRow, ";");
         indexOf_postOrt     = findIndexOf("postOrt", indexRow, ";");
         indexOf_land        = findIndexOf("land", indexRow, ";");
-
         
         //DEBUG
         System.out.println("indexOf_prenNr is " + indexOf_prenNr);
@@ -376,42 +355,30 @@ public class Import {
                     source + ";" +
                     "0";
 
-            // M�STE ST�DA RADEN F�RST
-            // Om raden �r tom s� skall den inte l�ggas in. 
+            // MÅSTE STÄDA RADEN FÖRST
+            // Om raden är tom så skall den inte läggas in. 
             
             toRow = Helpers.cleanRow(toRow);
             
             if (toRow.length() > 15) {
-            
                 prenumerant = new Subscriber(toRow);
-
                 toArrayList.add(prenumerant);
-                
                 //System.out.println(prenumerant.masterFormat());
             }
-            
-            
-            
         }
-                
     }
  
-    public static int findIndexOf(String searchTerm, 
-                                  String inRow, 
+    public static int findIndexOf(String searchTerm, String inRow, 
                                   String withRowDelimiter) {
       
         String[] indexes = inRow.split(withRowDelimiter);
-      
         int index = -1;
-  
         for (int i = 0; i < indexes.length; i++) {
-      
-            if (indexes[i].equalsIgnoreCase(searchTerm)) {index = i;}
-      
+            if (indexes[i].equalsIgnoreCase(searchTerm)) {
+            	index = i;
+            }
         }
-      
         return index;
-  
     }
     
 }

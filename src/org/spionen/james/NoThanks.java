@@ -1,7 +1,6 @@
 package org.spionen.james;
 
 /**
- * Write a description of class NoThanks here.
  *
  * @author  Maxim Fris
  * @version 2011-01-31
@@ -23,8 +22,8 @@ public class NoThanks
         String noThanksFilePath = GetFile.noThanksFilePath;
         
         //Create and popupate Lists
-        ArrayList<Subscriber> master       = new ArrayList<Subscriber>();
-        ArrayList<Subscriber> noThanks     = new ArrayList<Subscriber>();
+        ArrayList<Subscriber> master   = new ArrayList<Subscriber>();
+        ArrayList<Subscriber> noThanks = new ArrayList<Subscriber>();
 
         ListHelpers.readFromFileToList(masterFilePath, master);
         ListHelpers.readFromFileToList(noThanksFilePath, noThanks);
@@ -35,7 +34,7 @@ public class NoThanks
         //
         String abNr = JOptionPane.showInputDialog(null,
                 "Skriv in prenumerationsnummer på den som"
-                + "\nnskar bli borttagen som mottagare av Spionen.");
+              + "\nnskar bli borttagen som mottagare av Spionen.");
 
         if (abNr.length() <= 10 && !(abNr.length() < 4)) {
             JOptionPane.showMessageDialog(null, "Du har angivit prenumerationsnummer: " + abNr);

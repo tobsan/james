@@ -3,12 +3,12 @@ package org.spionen.james;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.List;
 
 public abstract class ImportFile {
 	
-	public abstract ArrayList<Subscriber> readFile(File file);
-	public ArrayList<Subscriber> readFile(String filename) throws IOException, FileNotFoundException {
+	public abstract List<Subscriber> readFile(File file);
+	public List<Subscriber> readFile(String filename) throws IOException, FileNotFoundException {
 		File f = new File(filename);
 		// Check for common things
 		if(!f.isFile()) {
@@ -21,8 +21,8 @@ public abstract class ImportFile {
 		return readFile(f);
 	}
 	
-	public abstract void writeFile(ArrayList<Subscriber> subscribers, File file);
-	public void writeFile(ArrayList<Subscriber> subscribers, String filename) throws IOException, FileNotFoundException {
+	public abstract void writeFile(List<Subscriber> subscribers, File file);
+	public void writeFile(List<Subscriber> subscribers, String filename) throws IOException, FileNotFoundException {
 		File f = new File(filename);
 		if(!f.exists()) {
 			boolean b = f.createNewFile();
@@ -65,8 +65,8 @@ public abstract class ImportFile {
 		case Category: return s.getType();
 		case Distributor: return s.getDistributor();
 		case Note: return s.getNote();
+		default: return "";
 		}
-		return "";
 	}
 	
 	public void setByField(FieldType ft, Subscriber s, String data) {

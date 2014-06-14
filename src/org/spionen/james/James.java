@@ -2,12 +2,9 @@ package org.spionen.james;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import javax.swing.JFrame;
-
-// TODO: Gör ett flow över states för ett nummer. Nån slags state-klass så att man inte kan göra fel!
 
 /**
  * This is the controller class for James

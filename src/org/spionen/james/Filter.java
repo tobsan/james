@@ -12,7 +12,7 @@ import java.util.Collections;
  */
 public class Filter {
 
-    private static String filterPath = GetFile.jamesFilterPath;
+    private static final String filterPath = GetFile.jamesFilterPath;
     
     
     public static ArrayList<String> createFilterArray(File fromFile) 

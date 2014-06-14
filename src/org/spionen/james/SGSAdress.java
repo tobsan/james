@@ -26,30 +26,24 @@ public class SGSAdress implements Comparable<SGSAdress> {
 
     }
     
-    //Accessors
+    //Getters
     public String getGatuAdress() {return gatuAdress;}
     public String getAdressSpecifikation() {return adressSpecifikation;}
     public String getPostNr() {return postNr;}
     public String getPostOrt() {return postOrt;}
-    public String getAll() {return gatuAdress + " " + 
-                                   adressSpecifikation + " " + 
-                                   postNr + " " + 
-                                   postOrt;}
-    
-    
-    
-    //Overriders
+    public String getAll() {
+    	return gatuAdress + " " + 
+    		   adressSpecifikation + " " + 
+               postNr + " " + 
+               postOrt;
+    }
+        
     @Override 
     public int compareTo(SGSAdress sgsAdress) {
-        
         int result = this.getPostNr().compareTo(sgsAdress.getPostNr());
-        
         if (result != 0) {
-            
             return result;
         }
-        
         return this.getGatuAdress().compareTo(sgsAdress.getGatuAdress());
-    
     }    
 }

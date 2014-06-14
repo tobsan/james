@@ -22,8 +22,8 @@ public class Subscriber implements Comparable<Subscriber>
     // Do not use
     public Subscriber(String masterFileRow) {
 
-        Scanner sc = new Scanner(masterFileRow);
-        sc = sc.useDelimiter(";");
+        Scanner s = new Scanner(masterFileRow);
+        Scanner sc = s.useDelimiter(";");
 
         abNr            = sc.next();
         firstName           = sc.next().trim();
@@ -38,6 +38,7 @@ public class Subscriber implements Comparable<Subscriber>
         note            = sc.next();
         
         sc.close();
+        s.close();
     }
     
     public Subscriber() {
@@ -148,7 +149,6 @@ public class Subscriber implements Comparable<Subscriber>
                      distributor + ";" +
                      type  + ";" +
                      note;
-        
         return row;
     }
 

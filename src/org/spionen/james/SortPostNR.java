@@ -1,5 +1,10 @@
 package org.spionen.james;
 
+/**
+ * Is this class obsolete?
+ * @author Maxim
+ *
+ */
 public class SortPostNR
 {
 

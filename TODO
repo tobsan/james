@@ -1,0 +1,16 @@
+* Decide on what the standard encoding should be (depends on suppliers of data)
+* Should SortPostNR be used?
+* Create some kind of state of each issue that is tracked.
+	- Get source data for addresses
+	- Send formatted address lists to VTD/TB
+	- Get misslists back
+	- Redo address lists and send to VTAB
+	- Get misslists from VTD/TB
+	- Register misslists and close issue
+* For each text formatting of a Subscriber, we should use some kind of pattern.
+	- Maybe just an interface :: Subscriber -> String
+	- But careful when it comes to CSV and Excel, use right formatting!
+	- This also goes for the formatting in writing in importFile
+* Make the descriptions presented in the GUI more modular, not hard coded.
+
+

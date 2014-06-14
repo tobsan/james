@@ -1,9 +1,12 @@
 package org.spionen.james;
 
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.io.Reader;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -14,18 +17,43 @@ import org.supercsv.prefs.CsvPreference;
 
 
 /**
- * TODO: Make preferences available in the constructor, such as
- * 		 what char should be separator etc. 
- * @author marvin
+ * This class handles reading and writing CSV files for address data to use
+ * with james. This does NOT handle output to any distributor, but only the 
+ * source data for addresses.
+ * 
+ * @author Tobias Olausson
  *
  */
 public class CsvImportFile extends ImportFile {
 
+	private CsvPreference pref;
+	private String encoding;
+	
+	/**
+	 * Creates a new instance of this class, with given formatting options
+	 * @param preference the kind of CSV file this is
+	 * @param encoding the encoding used for the file
+	 */
+	public CsvImportFile(CsvPreference preference, String encoding) {
+		this.pref = preference;
+		this.encoding = encoding;
+	}
+	
+	/**
+	 * Creates a new instance of this class, with the north european
+	 * excel preference for CSV style, and ISO-8859-1 as encoding.
+	 */
+	public CsvImportFile() {
+		this.pref = CsvPreference.EXCEL_NORTH_EUROPE_PREFERENCE;
+		this.encoding = "ISO-8859-1";
+	}
+	
 	@Override
-	public ArrayList<Subscriber> readFile(File file) {
+	public List<Subscriber> readFile(File file) {
 		try {
-			ArrayList<Subscriber> subscribers = new ArrayList<Subscriber>();
-			CsvListReader reader = new CsvListReader(new FileReader(file), CsvPreference.EXCEL_NORTH_EUROPE_PREFERENCE);
+			List<Subscriber> subscribers = new ArrayList<Subscriber>();
+			Reader r = new InputStreamReader(new FileInputStream(file), encoding);
+			CsvListReader reader = new CsvListReader(r, pref);
 			
 			// Handle the header
 			String[] header = reader.getHeader(true);
@@ -53,9 +81,10 @@ public class CsvImportFile extends ImportFile {
 	}
 
 	@Override
-	public void writeFile(ArrayList<Subscriber> subscribers, File file) {
+	public void writeFile(List<Subscriber> subscribers, File file) {
 		try {
-			CsvListWriter writer = new CsvListWriter(new FileWriter(file), CsvPreference.EXCEL_NORTH_EUROPE_PREFERENCE);
+			Writer w = new PrintWriter(file, encoding);
+			CsvListWriter writer = new CsvListWriter(w, pref);
 			// First, write a header
 			List<FieldType> order = Arrays.asList(standardOrder());
 			writer.write(order);
@@ -80,7 +109,7 @@ public class CsvImportFile extends ImportFile {
 		String output = "/home/marvin/workspace/doktorander.csv";
 		CsvImportFile c = new CsvImportFile();
 		try {
-			ArrayList<Subscriber> subs = c.readFile(input);
+			List<Subscriber> subs = c.readFile(input);
 			c.writeFile(subs, output);
 			for(Subscriber s : subs) {
 				System.out.println(s.vtdFormat());

@@ -9,13 +9,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.DateFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 
 /**
@@ -45,7 +42,7 @@ public class ListHelpers {
        
            distDate = distDate.replaceAll("-", "");
        
-           //Kolla s� inmatat datum �r i siffror
+           //Kolla så inmatat datum är i siffror
            try { date = Integer.parseInt(distDate); } 
            catch (NumberFormatException e) { continue; }
                       
@@ -111,11 +108,8 @@ public class ListHelpers {
         int index = -1;                 // Returnerat index
 
         while ((first <= last) && !(al.get(middle).getAbNr().compareTo(a)==0)) {
-
             if (al.get(middle).getAbNr().compareTo(a)< 0) {first = middle + 1;}
-
             if (al.get(middle).getAbNr().compareTo(a)> 0) {last = middle - 1;}
-
             middle = (first + last) / 2;
         }
 
@@ -174,11 +168,7 @@ public class ListHelpers {
        // Fixa datum för transaktion - Formattering
        DateFormat df = new SimpleDateFormat("yyyyMMddHHmmss");
              
-       String targetFilePath = filePath;
-
-       PrintWriter targetFile = new PrintWriter(new BufferedWriter
-                                (new FileWriter(targetFilePath)));
-       
+       String targetFilePath = filePath;       
        PrintWriter pw = new PrintWriter(targetFilePath, "ISO-8859-1");
        
        String prefix = "";
@@ -191,24 +181,17 @@ public class ListHelpers {
 
        // Skriv Start-rader
        prefix = "A100";
-       
        for (int i = 0; i < startList.size(); i++) {
            pw.print(prefix + line + startList.get(i).tbFormat() + "\n");
-           
-           //targetFile.println(prefix + line + al.get(i).tbFormat());
        }
 
        // Skriv Stopp-rader
        prefix = "A101";
-       
        for (int i = 0; i < stopList.size(); i++) {
            pw.print(prefix + line + stopList.get(i).tbFormat() + "\n");
-           
-           //targetFile.println(prefix + line + al.get(i).tbFormat());
        }
 
        pw.close();
-       //targetFile.close();
    }
     
    /**
@@ -236,24 +219,18 @@ public class ListHelpers {
        targetFile.close();
        System.out.println("Testräknaren för (" + filePath + ") visar " + tc
                            + " objekt");
-
-
    }
     
    public static void copyRows(File fromFile, ArrayList<String> toArrayList)
                                throws FileNotFoundException, IOException {
 
        BufferedReader fIn = new BufferedReader(new FileReader(fromFile));
-
        String row = fIn.readLine();
-
        while (row != null) {
-
            toArrayList.add(row);
-
            row = fIn.readLine();
        }
-
+       fIn.close();
    }
        
    public static void getAllDistributorStatistic(int year, int issue) 
@@ -297,17 +274,15 @@ public class ListHelpers {
             
         }
         
-                JOptionPane.showMessageDialog(null,
-                 "Statistik enligt nedan:\n"
-                 + "Totalt: " + master.size() + " prenumeranter.\n"
-                 + "Varav\n"
-                 + "         VTD     : " + vtd + " st\n"
-                 + "         TB       : " + tb + " st\n"
-                 + "         Bring   : " + bring + " st\n"
-                 + "         Posten : " + posten + " st (" + special + " special)\n"
-                 + "och " + no + " som inte vill ha. tidningen alls.");
-    
-        
+        JOptionPane.showMessageDialog(null,
+         "Statistik enligt nedan:\n"
+         + "Totalt: " + master.size() + " prenumeranter.\n"
+         + "Varav\n"
+         + "         VTD     : " + vtd + " st\n"
+         + "         TB       : " + tb + " st\n"
+         + "         Bring   : " + bring + " st\n"
+         + "         Posten : " + posten + " st (" + special + " special)\n"
+         + "och " + no + " som inte vill ha. tidningen alls.");
    }
    
    public static String toTB(String compoundAddress)
@@ -316,13 +291,7 @@ public class ListHelpers {
        // CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCNNNNNCCCCCCCCCCNNNNNCNNNNNNNNNN
        
        String formattedAddress = "";
-
-       //System.out.println(compoundAddress);
-       
        compoundAddress = prepareCompoundAddress(compoundAddress);
-       
-       //System.out.println(compoundAddress);
-       
        String[] arr = compoundAddress.split(" ");
        String s = "";
                     
@@ -337,66 +306,39 @@ public class ListHelpers {
        int appNr = -1; //10
        //String appartment = "";
        
-       if (arr.length > 0)
-       {
+       if (arr.length > 0) {
            gata = arr[0];
-           
-           if (arr.length > 1)
-           {
-               for(int i = 1; i < arr.length; i++)
-               {
+           if (arr.length > 1) {
+               for(int i = 1; i < arr.length; i++) {
                    s = arr[i];
-                   
-                   if (isInt(s))
-                   {
-                       if (lgh == false)
-                       {
-                           if (gatuNr == -1)
-                           {
+                   if (isInt(s)) {
+                       if (lgh == false) {
+                           if (gatuNr == -1) {
                                gatuNr = Integer.parseInt(s);
-                           }
-                           
-                           else if(s.length() > 3) 
-                           {
+                           } else if(s.length() > 3) {
                                appNr = Integer.parseInt(s);
-                           }
-                                   
-                           else 
-                           {
+                           } else {
                                floor = Integer.parseInt(s);
                            }
-                       }
-                       
-                       else if (lgh == true)
-                       {
+                       } else if (lgh == true) {
                            appNr = Integer.parseInt(s);
                        }
-                   }
-                   
-                   else 
-                   {
-                       if (isLGH(s)) { lgh = true; }
-                       
-                       else if (s.equalsIgnoreCase(":") || s.equalsIgnoreCase("-")) 
-                       { 
-                           if (i > 2 && i < arr.length)
-                           {
-                               if (isInt(arr[i+1]))
-                               {
-                                   if (arr[i+1].length() < 4)
-                                   {
+                   } else {
+                       if (isLGH(s)) { 
+                    	   lgh = true; 
+                       } else if (s.equalsIgnoreCase(":") || s.equalsIgnoreCase("-")) { 
+                           if (i > 2 && i < arr.length) {
+                               if (isInt(arr[i+1])) {
+                                   if (arr[i+1].length() < 4) {
                                        littra = s + arr[i+1];
                                    }
                                }
                            }
                            
-                           if (isInt(arr[i-1]))
-                           {
+                           if (isInt(arr[i-1])) {
                                littra = arr[i-1] + littra;
                            }
-                           
                            i++;
-                            
                        }
                        
                        else if (isFloor(s)) {floorType = "V";}
@@ -407,22 +349,13 @@ public class ListHelpers {
                        else if (s.equalsIgnoreCase("UH")) {door = "UH";}
                        else if (s.equalsIgnoreCase(":U")) { door = "U" + arr[i+1]; }
                        else if (s.equalsIgnoreCase("U")) { door = s + arr[i+1]; }
-
                        else if (littra.isEmpty() && s.length() == 1) { littra = s; }
-                       
-                       else if (gata.length() == 0) 
-                       {
+                       else if (gata.length() == 0) {
                            gata = s;
-                       }
-                       
-                       else if (gatuNr == -1)
-                       {
+                       } else if (gatuNr == -1) {
                            gata = gata + " " + s;
                        }
-                       
                    }
-                   
-
                }
            }
        }
@@ -438,118 +371,78 @@ public class ListHelpers {
        //   else { appartment = appNr + "" ; }
        //}
        
-       formattedAddress = String.format("%-35s%05d%-6s%-4s%05d%-1s%010d", gata, gatuNr, littra, door, floor, floorType, appNr);
-       
+       formattedAddress = String.format("%-35s%05d%-6s%-4s%05d%-1s%010d", gata,
+    		   							gatuNr, littra, door, floor, floorType,
+    		   							appNr);
        return formattedAddress;
        
    }
    
    
-   public static boolean isInt(String s)
-   {
+   public static boolean isInt(String s) {
        try {
-           
            Integer.parseInt(s);
            return true;
-       }
-       catch(NumberFormatException nfe) {
+       } catch(NumberFormatException nfe) {
            return false;
        }
    }
    
-   public static boolean isLGH(String s)
-   {
-       if (s.equalsIgnoreCase("lgh")) { return true; }
-       if (s.equalsIgnoreCase("l�g")) { return true; }
-       else { return false; }
+   public static boolean isLGH(String s) {
+	   return s.equalsIgnoreCase("lgh") || s.equalsIgnoreCase("läg");
    }
    
-   public static boolean isMixed(String s)
-   {       
+   public static boolean isMixed(String s) {       
        boolean haveChar = false;
        boolean haveInt = false;
        
        String s1 = "";
-       
        int sLength = s.length();
        
-       for (int i = 0; i < sLength; i++)
-       {
+       for (int i = 0; i < sLength; i++) {
           s1 = s.substring(i, i+1);
           
           if (isInt(s1)) { haveInt = true; }
           else { haveChar = true; }
        }
        
-       if (haveInt == true && haveChar == true) { return true; }
-       else { return false; }
-       
+       return haveInt && haveChar;
    }
    
-   public static String splitMixed(String s)
-   {
+   public static String splitMixed(String s) {
        String splitMix = "";
        String lastWas = "";
       
        String s1 = "";
-       
        int sLength = s.length();
-       
-       for (int i = 0; i < sLength; i++)
-       {
+       for (int i = 0; i < sLength; i++) {
           s1 = s.substring(i, i+1);
 
-          if (s1.equalsIgnoreCase(" "))
-          {
+          if (s1.equalsIgnoreCase(" ")) {
               splitMix = splitMix + s1;
-          }
-          
-          else if (isInt(s1)) 
-          {        
-              if (lastWas.equalsIgnoreCase("")) 
-              {
+          } else if (isInt(s1)) {        
+              if (lastWas.equalsIgnoreCase("")) {
                   splitMix = splitMix + s1;
-              }
-              
-              else if (lastWas.equalsIgnoreCase("I")) 
-              {
+              } else if (lastWas.equalsIgnoreCase("I")) {
                   splitMix = splitMix + s1;
-              }
-              
-              else 
-              {
+              } else {
                   splitMix = splitMix + " " + s1;
               }
-              
               lastWas = "I";
-          }
-          
-          else 
-          {
-              if (lastWas.equalsIgnoreCase("")) 
-              {
+          } else {
+              if (lastWas.equalsIgnoreCase("")) {
                   splitMix = splitMix + s1;
-              }
-              
-              else if (lastWas.equalsIgnoreCase("C")) 
-              {
+              } else if (lastWas.equalsIgnoreCase("C")) {
                   splitMix = splitMix + s1;
-              }
-              
-              else 
-              {
+              } else {
                   splitMix = splitMix + " " + s1;
               }
-              
               lastWas = "C";
           }
-          
        }
        
        splitMix = splitMix.replaceAll("  ", " ");
-       
        return splitMix;
-       
    }
    
    public static String prepareCompoundAddress(String ca)
@@ -558,30 +451,23 @@ public class ListHelpers {
        ca = ca.replaceAll("\\.", " ");
        ca = ca.replaceAll("\\/", " ");
        ca = ca.replaceAll("N:A", "NORRA");
-       ca = ca.replaceAll("V:A", "V�STRA");
+       ca = ca.replaceAll("V:A", "VÄSTRA");
        ca = ca.replaceAll("S:T", "SANKT");
-       ca = ca.replaceAll("1:A", "F�RSTA");
+       ca = ca.replaceAll("1:A", "FÖRSTA");
        ca = ca.replaceAll("2:A", "ANDRA");
        ca = ca.replaceAll("3:E", "TREDJE");
-       ca = ca.replaceAll("4:E", "FJ�RDE");
+       ca = ca.replaceAll("4:E", "FJÄRDE");
        ca = ca.replaceAll("5:E", "FEMTE");
-
-       
        ca = splitMixed(ca);
-       
        return ca;
    }
    
-   public static boolean isFloor(String s)
-   {
-       if (s.equalsIgnoreCase("V�N")) {return true;}
-       else {return false;}
+   public static boolean isFloor(String s) {
+	   return s.equalsIgnoreCase("VÅN"); 
    }
        
-   public static boolean isFlight(String s)
-   {
-       if (s.equalsIgnoreCase("TR")) {return true;}
-       else {return false;}
+   public static boolean isFlight(String s) {
+	   return s.equalsIgnoreCase("TR");
    }
        
 }

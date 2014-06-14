@@ -1,7 +1,7 @@
 package org.spionen.james;
 
 /**
- *
+ * This should serve well to be some kind of state class
  * @author Maxim
  */
 
