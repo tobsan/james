@@ -41,7 +41,7 @@ public class Exporter {
         ListHelpers.readFromFileToList(masterFilePath, master);
         ListHelpers.readFromFileToList(notForVTDFilePath, notForVTD);
         
-        System.out.println("Master AL best�r av: " + master.size() + " Objekt.");
+        System.out.println("Master AL består av: " + master.size() + " Objekt.");
 
         //Placeholder Prenumerant
         Subscriber pren = null;
@@ -480,7 +480,7 @@ public class Exporter {
         
         // User Feedback
         JOptionPane.showMessageDialog(null,
-            "F�rdig med V-Tab listan (Bara Bring).\n"
+            "Färdig med V-Tab listan (Bara Bring).\n"
          + "Statistik enligt nedan:\n"
          + "Totalt: " + b + " prenumeranter.\n"
          + "Varav Bring  = " + b + " st");
@@ -515,7 +515,7 @@ public class Exporter {
         
         // User Feedback
         JOptionPane.showMessageDialog(null,
-            "F�rdig med V-Tab listan (Bara Posten).\n"
+            "Färdig med V-Tab listan (Bara Posten).\n"
          + "Statistik enligt nedan:\n"
          + "Totalt: " + p + " prenumeranter.\n"
          + "Varav Posten = " + p + " st");

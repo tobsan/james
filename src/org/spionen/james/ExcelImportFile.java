@@ -13,7 +13,9 @@ import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 public class ExcelImportFile extends ImportFile {
-
+	
+	public static final String[] excelExt = {".xls", ".xlsx"};
+	
 	public List<Subscriber> readFile(File file) { 
 		List<Subscriber> subscribers = new ArrayList<Subscriber>();
 		try {

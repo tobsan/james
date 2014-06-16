@@ -4,7 +4,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 
 /**
  * This is the controller class for James
@@ -14,6 +16,7 @@ import javax.swing.JFrame;
 public class James {
     
 	private JamesFrame jf;
+	private MasterFile master;
 	public James() {
 		
 		// Create the view
@@ -32,13 +35,17 @@ public class James {
 		
 		jf.addCreateIssueListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				// TODO: Do something
+				int year = jf.getYear();
+				int issue = jf.getIssue();
+				jf.lockIssue();
+				master = new MasterFile(year, issue);
 			}
 		});
 		
 		jf.addGetIssueListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				// TODO: Do something
+				// Show a file chooser and use that file
 			}
 		});
 		

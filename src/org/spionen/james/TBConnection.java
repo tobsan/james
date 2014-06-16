@@ -7,6 +7,11 @@ import java.io.InputStream;
 
 import org.apache.commons.net.ftp.FTPClient;
 
+/**
+ * This class handles the FTP connection to TidningsBärarna
+ * @author Tobias Olausson
+ *
+ */
 public class TBConnection {
 	private String hostname = "ftp.tidningsbararna.se"; // Standard URL
 	private String username;
@@ -59,7 +64,7 @@ public class TBConnection {
 				try {
 					InputStream is = new FileInputStream(filename);
 					client.appendFile("FTPFIN01", is);
-					client.sendCommand("QUOT", "RCMD \"call FTCLIN\"" + channel);
+					client.sendCommand("QUOT", "RCMD \"call FTCLIN" + channel + "\"");
 					client.sendCommand("CLOSE");
 					client.logout();
 				} catch(IOException e) {

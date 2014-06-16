@@ -26,6 +26,7 @@ import org.supercsv.prefs.CsvPreference;
  */
 public class CsvImportFile extends ImportFile {
 
+	public static final String[] csvExt = {".csv", ".txt"};
 	private CsvPreference pref;
 	private String encoding;
 	

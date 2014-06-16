@@ -34,7 +34,7 @@ public class NoThanks
         //
         String abNr = JOptionPane.showInputDialog(null,
                 "Skriv in prenumerationsnummer på den som"
-              + "\nnskar bli borttagen som mottagare av Spionen.");
+              + "\nönskar bli borttagen som mottagare av Spionen.");
 
         if (abNr.length() <= 10 && !(abNr.length() < 4)) {
             JOptionPane.showMessageDialog(null, "Du har angivit prenumerationsnummer: " + abNr);

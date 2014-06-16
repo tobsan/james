@@ -2,7 +2,6 @@ package org.spionen.james;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
@@ -11,103 +10,15 @@ import java.util.Collections;
 
 /**
  *
- * @author Maxim
+ * @author Maxim Fris
+ * @author Tobias Olausson
  */
 
 public class Importer {
-
-	private String directory;
 	private static String inPath = GetFile.jamesImportPath;
-	private List<Subscriber> subscribers;
-	private List<Subscriber> rejects;
-	
-	public Importer(String directory) {
-		this.directory = directory;
-		this.subscribers = new ArrayList<Subscriber>();
-		this.rejects = new ArrayList<Subscriber>();
-		importAll();
-	}
-	
-	public void importAll() {
-		File dir = new File(directory);
-		if(dir.isDirectory()) {
-			// Filter out the files that we want to read
-			String[] excelFiles = dir.list(new FilenameFilter() {
-				public boolean accept(File dirname, String name) {
-					return name.endsWith(".xls") || name.endsWith(".xlsx");
-				}
-			});
-			String[] csvFiles = dir.list(new FilenameFilter() {
-				public boolean accept(File dirname, String name) {
-					return name.endsWith(".csv") || name.endsWith(".txt");
-				}
-			});
-			
-			// Read the files
-			try {
-				for(String f : excelFiles) {
-					List<Subscriber> subs = new ExcelImportFile().readFile(f);
-					subscribers.addAll(subs);
-				}
-				
-				for(String f : csvFiles) {
-					CsvImportFile csvImport = new CsvImportFile();
-					List<Subscriber> subs = csvImport.readFile(f);
-					subscribers.addAll(subs);
-				}
-			} catch(IOException e) {
-				// Well, this is embarrasing
-				e.printStackTrace();
-			}
-		}
-		Collections.sort(subscribers);
-	}
-	
-	/**
-	 * 
-	 * @return
-	 */
-	public void removeBadAddresses() {
-		Iterator<Subscriber> it = subscribers.iterator();
-		while(it.hasNext()) {
-			Subscriber s = it.next();
-			if(!s.correctAdress()) {
-				s.setDistributor("I"); // What does this mean?
-				rejects.add(s);
-				it.remove();
-			}
-		}
-	}
-	
-	/**
-	 * Assumes that the list of subscribers is sorted
-	 */
-	public void removeDuplicates() {
-		Iterator<Subscriber> it = subscribers.iterator();
-		while(it.hasNext()) {
-			Subscriber s1 = it.next();
-			if(it.hasNext()) {
-				Subscriber s2 = it.next();
-				if(s1.comparePrenumerant(s2)) {
-					rejects.add(s2);
-					it.remove();
-				}
-			}
-		}
-	}
-	
-	/**
-	 * Removes all Subscribers that do not want to get the paper
-	 */
-	public void removeDeclines() {
-		
-	}
-	
-    public static void importAll(int year, int issue) 
-                  throws FileNotFoundException, 
-                         IOException {
+    public static void importAll(int year, int issue) throws FileNotFoundException, IOException {
                
-       // Log Status
+    	// Log Status
         Helpers.logStatusMessage("Importing Files - Started.");
 
         //Skapa ArrayList
@@ -115,9 +26,7 @@ public class Importer {
         ArrayList<Subscriber>  masterList  = new ArrayList<Subscriber>();
         ArrayList<Subscriber>  rejectList  = new ArrayList<Subscriber>();
         
-        
         // Kolla Importfolder och skapa lista med filer för import. 
-             
         String filter = "txt";
          
         ArrayList<File> listOfFilesInFolder = 
@@ -141,20 +50,15 @@ public class Importer {
             fileRows.clear();
             
             System.out.println("Mastern = " + masterList.size());
-            
         }
   
        //Sort
        Collections.sort(masterList);
        System.out.println("Master AL sorterad.");
-        
-  
        // Log Status
        Helpers.logStatusMessage("Importing Files - Completed.");
-        
        
        //FOLLOWING IS CODE FROM OLD METHOD
-        
         
        // Log Status
        Helpers.logStatusMessage("Cleaning Master: Incomplete Rows - Started.");
@@ -164,16 +68,17 @@ public class Importer {
        int cc = 0; //Counter correct addresses.
        int ic = 0; //Counter incorrect addresses.
 
+       // This is not a nice way to do it.
        for (int i = 0; i < masterList.size(); i++) {
            Subscriber p = masterList.get(i);
            if (p.correctAdress()) {
                 cc++;
            } else {
-                   ic++;
-                   p.setDistributor("I");
-                   rejectList.add(p);
-                   masterList.remove(i);
-                   i--;
+               ic++;
+               p.setDistributor("I");
+               rejectList.add(p);
+               masterList.remove(i);
+               i--;
            }
        }
 
@@ -207,6 +112,7 @@ public class Importer {
 
            if (p1.getAbNr().equals(p2.getAbNr()) && !(p1.getAbNr().equals("000"))) {
                if (p1.getAbNr().length() >= 9) {
+            	   // TODO: Why is this distinction here?
                    if (p1.getType().contains("STUDENT") || p1.getType().contains("DOKTORAND")) {
                        p2.setDistributor("D");
                        rejectList.add(p2);
@@ -243,25 +149,17 @@ public class Importer {
        ArrayList<Subscriber> noThanks = new ArrayList<Subscriber>();
 
        ListHelpers.readFromFileToList(GetFile.noThanksFilePath, noThanks);
-
        int nc = 0; //NoThanks counter.
-
        System.out.println("NoThanks AL består av: " + noThanks.size() + " Objekt.");
 
-
        for (int i = 0; i < noThanks.size(); i++) {
-
            String abNr = noThanks.get(i).getAbNr();
-
            int index = ListHelpers.searchListForAbNr(masterList, abNr);
-
            if (index >= 0) {
-
                masterList.get(index).setDistributor("N");
                masterList.get(index).setNote("Vill ej ha Spionen");
                nc++;
            }
-
        }
 
        System.out.println("No Thanks = " + nc);
@@ -285,9 +183,7 @@ public class Importer {
 
        // Log Status
        Helpers.logStatusMessage("Saving Files: Finished.");
-       
        Exporter.prepareMasterForExport(year, issue);
-
     }
     
     

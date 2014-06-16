@@ -212,12 +212,26 @@ public class JamesFrame extends JFrame {
 	}
 	
 	public int getYear() {
-		return Integer.parseInt(issueYearField.getText());
+		return Integer.parseInt(issueYearField.getText().trim());
 	}
 	
 	public int getIssue() {
-		return Integer.parseInt(issueNumberField.getText());
+		return Integer.parseInt(issueNumberField.getText().trim());
 	}
+	
+	public void lockIssue() {
+		issueNumberField.setEnabled(false);
+		issueYearField.setEnabled(false);
+	}
+	
+	public void unlockIssue() {
+		issueNumberField.setEnabled(false);
+		issueYearField.setEnabled(false);
+	}
+	
+	/*
+	 * Only listeners below
+	 */
 	
 	public void addCreateIssueListener(ActionListener al) {
 		createIssueButton.addActionListener(al);

@@ -5,6 +5,13 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
 
+/**
+ * Abstract class to capture common behaviour for source files we want
+ * to import into james. Such files are to contain address information
+ * 
+ * @author Tobias Olausson
+ *
+ */
 public abstract class ImportFile {
 	
 	public abstract List<Subscriber> readFile(File file);

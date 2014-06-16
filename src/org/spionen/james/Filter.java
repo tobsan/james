@@ -14,14 +14,12 @@ public class Filter {
 
     private static final String filterPath = GetFile.jamesFilterPath;
     
-    
     public static ArrayList<String> createFilterArray(File fromFile) 
                                         throws FileNotFoundException, 
                                                IOException {
     
         ArrayList<String> fileRows = new ArrayList<String>();
         ArrayList<String> postNrs  = new ArrayList<String>();
-        
         ListHelpers.copyRows(fromFile, fileRows);
         
         for (int i = 0; i < fileRows.size(); i++) {
@@ -38,7 +36,6 @@ public class Filter {
                     for (int y = a; y <= o; y++) {
                         x = Integer.toString(y); 
                         postNrs.add(x);
-                        //System.out.println(x);
                     }
                 }
             }

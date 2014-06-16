@@ -7,7 +7,7 @@ Götheborgske Spionen is a newspaper that is distributed to all students and emp
 
 Dependencies
 ============
-James depends third party software to function properly. The following are used:
+James depends on third party software to function properly. The following are used:
 * Apache POI (>= 3.9)
 * SuperCSV (>= 2.2.0)
 * Apache Commons Net (>= 3.3)
