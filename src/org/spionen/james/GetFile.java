@@ -26,9 +26,6 @@ public class GetFile {
     // non Issue-specific data. Such as people that doesent want the paper.
     public static final String jamesReferencePath = jamesLibraryPath + "/reference/";
 
-    // Where James puts all settings files.
-    public static final String jamesSettingsPath = jamesLibraryPath + "/settings/";
-   
     // Where James puts all filter files.
     public static final String jamesFilterPath = jamesLibraryPath + "/filter/";
    

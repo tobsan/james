@@ -10,6 +10,8 @@ import java.io.*;
 import java.util.ArrayList;
 import javax.swing.*;
 
+import org.spionen.james.subscriber.Subscriber;
+
 public class NoThanks
 {
 
@@ -44,12 +46,12 @@ public class NoThanks
                 Subscriber p = master.get(index);
                 JOptionPane.showMessageDialog(null, "Prenumerant: " + p.getFullName());
 
-                System.out.println(p.masterFormat());
+                System.out.println(p.toString());
 
                 p.setDistributor("N");
                 p.setNote("Vill ej ha Spionen");
                 noThanks.add(p);
-                System.out.println(p.masterFormat());
+                System.out.println(p.toString());
             } else {
                 JOptionPane.showMessageDialog(null,
                         "Hittar ingen prenumerant med prenumerationsnummer "

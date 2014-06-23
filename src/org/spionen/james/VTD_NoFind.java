@@ -11,6 +11,8 @@ import java.io.*;
 import java.util.ArrayList;
 import javax.swing.*;
 
+import org.spionen.james.subscriber.Subscriber;
+
 public class VTD_NoFind
 {
 
@@ -58,7 +60,7 @@ public class VTD_NoFind
                 JOptionPane.showMessageDialog(null, "Prenumerant: "
                             + p.getFullName());
 
-                System.out.println(p.masterFormat());
+                System.out.println(p.toString());
                 
                 if (Filter.checkIfInRange(postNr, filterBring)) {
                     p.setDistributor("B");
@@ -88,7 +90,7 @@ public class VTD_NoFind
                     notForVTD.add(p);
                 }
 
-                System.out.println(p.masterFormat());
+                System.out.println(p.toString());
 
             } else {
                 JOptionPane.showMessageDialog(null,

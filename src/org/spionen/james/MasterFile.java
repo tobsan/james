@@ -2,10 +2,16 @@ package org.spionen.james;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+
+import org.spionen.james.importing.ImportFile;
+import org.spionen.james.importing.ImportFileFactory;
+import org.spionen.james.subscriber.Subscriber;
+import org.spionen.james.subscriber.VTDSubscriber;
 
 /**
  * This should serve well to be some kind of state class
@@ -13,14 +19,17 @@ import java.util.List;
  * @author Tobias Olausson
  */
 
-public class MasterFile implements Comparable<MasterFile> {
+public class MasterFile implements Comparable<MasterFile>, Serializable {
     
-    // Instance variables
+	private static final long serialVersionUID = -5687392826237960600L;
     private int year; 
     private int issue; 
     private String fileName; 
-    private List<Subscriber> subscribers;
+    
+    // These two contain ALL subscribers together.
+    private List<Subscriber> allSubscribers;
 	private List<Subscriber> rejects;
+	
     private State state;
     
     /**
@@ -39,37 +48,44 @@ public class MasterFile implements Comparable<MasterFile> {
     	this.issue = issue;
     	this.state = State.Init;
     	this.fileName = year + "-" + issue + "_Master.txt"; 
-    	subscribers = new ArrayList<Subscriber>();
+    	allSubscribers = new ArrayList<Subscriber>();
     	rejects = new ArrayList<Subscriber>();
     }
     
     public void importAll(String directory) {
 		File dir = new File(directory);
-		if(dir.isDirectory()) {
-			String[] files = dir.list();
-			for(String f : files) {
+		importAll(dir);
+	}
+    
+    public void importAll(File directory) {
+    	if(directory.isDirectory()) {
+			File[] files = directory.listFiles();
+			for(File f : files) {
 				try {
-					ImportFile imp = ImportFileFactory.createImportFile(f);
+					ImportFile imp = ImportFileFactory.createImportFile(f.getAbsolutePath());
+					System.out.println(f.getAbsolutePath());
 					List<Subscriber> subs = imp.readFile(f);
-					subscribers.addAll(subs);
-				} catch(IllegalArgumentException | IOException e) {
+					allSubscribers.addAll(subs);
+				} catch(IllegalArgumentException e) {
 					// TODO: Do something reasonable here
-					e.printStackTrace();
+					// e.printStackTrace();
 				}
 			}
 		}
-		Collections.sort(subscribers);
-	}
+		Collections.sort(allSubscribers);
+		removeBadAddresses();
+		removeDuplicates();
+    }
     
     /**
 	 * Remove addresses that are invalid
 	 */
 	public void removeBadAddresses() {
-		Iterator<Subscriber> it = subscribers.iterator();
+		Iterator<Subscriber> it = allSubscribers.iterator();
 		while(it.hasNext()) {
 			Subscriber s = it.next();
 			if(!s.correctAdress()) {
-				s.setDistributor("I"); // I for invalid?
+				s.setDistributor("Invalid");
 				rejects.add(s);
 				it.remove();
 			}
@@ -80,16 +96,15 @@ public class MasterFile implements Comparable<MasterFile> {
 	 * Assumes that the list of subscribers is sorted
 	 */
 	public void removeDuplicates() {
-		Iterator<Subscriber> it = subscribers.iterator();
+		Iterator<Subscriber> it = allSubscribers.iterator();
 		while(it.hasNext()) {
 			Subscriber s1 = it.next();
 			if(it.hasNext()) {
 				Subscriber s2 = it.next();
 				if(s1.comparePrenumerant(s2)) {
-					s2.setDistributor("D"); // D for duplicate?
+					s2.setDistributor("Duplicate");
 					rejects.add(s2);
 					it.remove();
-					
 				}
 			}
 		}
@@ -105,14 +120,36 @@ public class MasterFile implements Comparable<MasterFile> {
 			ImportFile imp = ImportFileFactory.createImportFile(declineFilePath);		
 			declines = imp.readFile(declineFilePath);
 			for(Subscriber s : declines) {
-				s.setDistributor("N"); // N for NoThanks
+				s.setDistributor("NoThanks");
 			}
 			rejects.addAll(declines);
 		} catch(IOException | IllegalArgumentException e) {
 			e.printStackTrace();
 		}
 	}
+	
+	public List<Subscriber> runFilter(String filterPath) {
+		List<Subscriber> subscribers = new ArrayList<Subscriber>();
+		Filter filter = new Filter();
+		filter.readFile(filterPath);
+		for(Subscriber s : allSubscribers) {
+			try {
+				int zipcode = Integer.parseInt(s.getZipCode());
+				if(filter.matches(zipcode)) {
+					subscribers.add(s);
+				}
+			} catch(NumberFormatException ne) {
+				// This is just some random output when there are errors
+				VTDSubscriber vs = new VTDSubscriber(s);
+				System.out.println(vs.toString());
+				System.exit(1);
+			}
+		}
+		return subscribers;
+	}
+	
     
+	public int size() { return allSubscribers.size(); }
     public int getYear() { return year; }
     public int getIssue() { return issue; }    
     public String getFileName() { return fileName; }
@@ -170,9 +207,9 @@ public class MasterFile implements Comparable<MasterFile> {
     	GotSource,
     	FirstVTD_TB,
     	GotFirstMiss,
-    	SecondVTD_TB,
+    	SecondVTD_TB_VTAB,
     	GotSecondMiss,
-    	Finalised
-    };
+    	Finalised;
+    }
     
 }

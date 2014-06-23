@@ -4,6 +4,9 @@ import java.io.*;
 import java.util.*;
 import javax.swing.*;
 
+import org.spionen.james.subscriber.Subscriber;
+import org.spionen.james.subscriber.Subscriber.Distributor;
+
 public class Exporter {
 
     private static String exportFolder = GetFile.jamesExportPath;
@@ -59,26 +62,26 @@ public class Exporter {
             pren = master.get(i);
             String postNr = pren.getZipCode();
 
-            if (!pren.getDistributor().equals("N")) {
+            if (pren.getDistributor() != Distributor.NoThanks) {
                 if (pren.isOKforPaperRoute()) {
                     if (Filter.checkIfInRange(postNr, filterTB)) {
-                        pren.setDistributor("T");
+                        pren.setDistributor(Distributor.TB);
                         t++;
                     } else if (Filter.checkIfInRange(postNr, filterVTD)) {
-                            pren.setDistributor("V");
+                            pren.setDistributor(Distributor.VTD);
                             v++;
                     } else if (Filter.checkIfInRange(postNr, filterBring)) {
-                            pren.setDistributor("B");
+                            pren.setDistributor(Distributor.Bring);
                             b++;
                     } else {
-                        pren.setDistributor("P");
+                        pren.setDistributor(Distributor.Posten);
                         p++;
                     }
                 } else if (Filter.checkIfInRange(postNr, filterBring)) {
-                        pren.setDistributor("B");
+                        pren.setDistributor(Distributor.Bring);
                         b++;
                 } else {
-                    pren.setDistributor("P");
+                    pren.setDistributor(Distributor.Posten);
                     p++;
                 }
             } else {
@@ -100,15 +103,15 @@ public class Exporter {
                 pren = master.get(index);
                 String postNr = pren.getZipCode();
 
-                if (!pren.getDistributor().equals("N")) {
+                if (pren.getDistributor() != Distributor.NoThanks) {
 
                     if (Filter.checkIfInRange(postNr, filterBring)) {
-                        pren.setDistributor("B");
+                        pren.setDistributor(Distributor.Bring);
                         pren.setNote("VTD-No-GO");
                         v--;
                         b++;
                     } else {
-                        pren.setDistributor("P");
+                        pren.setDistributor(Distributor.Posten);
                         pren.setNote("VTD-No-GO");
                         v--;
                         p++;
@@ -149,7 +152,7 @@ public class Exporter {
         // Log status
          Helpers.logStatusMessage("Preparing Master for Export - Finished.");
          
-         ListHelpers.getAllDistributorStatistic(year, issue);
+         // ListHelpers.getAllDistributorStatistic(year, issue);
          
          /**
          
@@ -181,8 +184,9 @@ public class Exporter {
            distDate = distDate.replaceAll("-", "");
        
            //Kolla så inmatat datum är i siffror
-           try { date = Integer.parseInt(distDate); } 
-           catch (NumberFormatException e) { 
+           try { 
+        	   date = Integer.parseInt(distDate); 
+           } catch (NumberFormatException e) { 
         	   continue; 
            }
                     
@@ -424,12 +428,12 @@ public class Exporter {
         int b = 0; //Bring Counter
         int p = 0; //Posten Counter
         for (int i = 0;  i < master.size(); i++) {
-            String filter = master.get(i).getDistributor();
-                if (filter.equals("B")) {
+            Distributor filter = master.get(i).getDistributor();
+                if (filter == Distributor.Bring) {
                     export.add(master.get(i));
                     b++;
                 }
-                if (filter.equals("P")) {
+                if (filter == Distributor.Posten) {
                     export.add(master.get(i));
                     p++;
                 }
@@ -464,8 +468,8 @@ public class Exporter {
 
         int b = 0; //Bring Counter
         for (int i = 0;  i < master.size(); i++) {
-            String filter = master.get(i).getDistributor();
-                if (filter.equals("B")) {
+            Distributor filter = master.get(i).getDistributor();
+                if (filter == Distributor.Bring) {
                     export.add(master.get(i));
                     b++;
                 }
@@ -499,8 +503,8 @@ public class Exporter {
 
         int p = 0; //Posten Counter
         for (int i = 0;  i < master.size(); i++) {
-            String filter = master.get(i).getDistributor();
-                if (filter.equals("P")) {
+            Distributor filter = master.get(i).getDistributor();
+                if (filter == Distributor.Posten) {
                     export.add(master.get(i));
                     p++;
                 }
@@ -536,12 +540,12 @@ public class Exporter {
         int p = 0; //Posten Counter
 
         for (int i = 0;  i < master.size(); i++) {
-            String filter = master.get(i).getDistributor();
-                if (filter.equals("B")) {
+            Distributor filter = master.get(i).getDistributor();
+                if (filter == Distributor.Bring) {
                     export.add(master.get(i));
                     b++;
                 }
-                if (filter.equals("P")) {
+                if (filter == Distributor.Posten) {
                     if (master.get(i).getAbNr().length() <= 5) {
                         export.add(master.get(i));
                         p++;

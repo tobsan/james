@@ -12,5 +12,5 @@
 	- But careful when it comes to CSV and Excel, use right formatting!
 	- This also goes for the formatting in writing in importFile
 * Make the descriptions presented in the GUI more modular, not hard coded.
-* Read up on how a "factory" is really supposed to work
-* Create an enum for distributor types, to use instead of Strings.
+* Get some things into a sqlite db, like filters
+* Make something common when it comes to importing excel/csv stuff

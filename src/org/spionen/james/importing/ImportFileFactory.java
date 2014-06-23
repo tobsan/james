@@ -1,4 +1,4 @@
-package org.spionen.james;
+package org.spionen.james.importing;
 
 /**
  * There should be a nicer way to list all valid extensions

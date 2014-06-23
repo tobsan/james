@@ -1,4 +1,4 @@
-package org.spionen.james;
+package org.spionen.james.importing;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -7,6 +7,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
+
+import org.spionen.james.Exporter;
+import org.spionen.james.GetFile;
+import org.spionen.james.Helpers;
+import org.spionen.james.ListHelpers;
+import org.spionen.james.subscriber.Subscriber;
+import org.spionen.james.subscriber.Subscriber.Distributor;
 
 /**
  *
@@ -75,7 +82,7 @@ public class Importer {
                 cc++;
            } else {
                ic++;
-               p.setDistributor("I");
+               p.setDistributor(Distributor.Invalid);
                rejectList.add(p);
                masterList.remove(i);
                i--;
@@ -114,12 +121,12 @@ public class Importer {
                if (p1.getAbNr().length() >= 9) {
             	   // TODO: Why is this distinction here?
                    if (p1.getType().contains("STUDENT") || p1.getType().contains("DOKTORAND")) {
-                       p2.setDistributor("D");
+                       p2.setDistributor(Distributor.Duplicate);
                        rejectList.add(p2);
                        masterList.remove(i+1);
                        i--;
                    } else {
-                       p1.setDistributor("D");
+                       p1.setDistributor(Distributor.Duplicate);
                        rejectList.add(p1);
                        masterList.remove(i);
                    }
@@ -156,7 +163,7 @@ public class Importer {
            String abNr = noThanks.get(i).getAbNr();
            int index = ListHelpers.searchListForAbNr(masterList, abNr);
            if (index >= 0) {
-               masterList.get(index).setDistributor("N");
+               masterList.get(index).setDistributor(Distributor.NoThanks);
                masterList.get(index).setNote("Vill ej ha Spionen");
                nc++;
            }
@@ -227,7 +234,6 @@ public class Importer {
     public static void convertRows(ArrayList<String> fromArrayList, 
                                    ArrayList<Subscriber> toArrayList, 
                                    String sourceFile) {
-        
         String  prenNr      = "",
                 namn        = "",
                 eNamn       = "",
@@ -331,7 +337,8 @@ public class Importer {
             toRow = Helpers.cleanRow(toRow);
             
             if (toRow.length() > 15) {
-                prenumerant = new Subscriber(toRow);
+            	// Empty subscriber
+                prenumerant = new Subscriber();
                 toArrayList.add(prenumerant);
                 //System.out.println(prenumerant.masterFormat());
             }

@@ -1,4 +1,8 @@
-package org.spionen.james;
+package org.spionen.james.importing;
+
+import org.spionen.james.FieldType;
+import org.spionen.james.subscriber.Subscriber;
+import org.spionen.james.subscriber.VTDSubscriber;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -60,7 +64,7 @@ public class CsvImportFile extends ImportFile {
 			String[] header = reader.getHeader(true);
 			FieldType[] order = new FieldType[header.length];
 			for(int i = 0; i < header.length; i++) {
-				order[i] = getFieldType(header[i]);
+				order[i] = FieldType.getFieldType(header[i]);
 			}
 			
 			// Then iterate through the rest of the lines
@@ -68,7 +72,7 @@ public class CsvImportFile extends ImportFile {
 			while((row = reader.read()) != null) {
 				Subscriber sub = new Subscriber();
 				for(int i = 0; i < row.size(); i++) {
-					setByField(order[i], sub, row.get(i));
+					sub.setByField(order[i], row.get(i));
 				}
 				subscribers.add(sub);
 			}
@@ -87,13 +91,13 @@ public class CsvImportFile extends ImportFile {
 			Writer w = new PrintWriter(file, encoding);
 			CsvListWriter writer = new CsvListWriter(w, pref);
 			// First, write a header
-			List<FieldType> order = Arrays.asList(standardOrder());
+			List<FieldType> order = Arrays.asList(FieldType.standardOrder());
 			writer.write(order);
 			// And then the rest of the columns
 			for(Subscriber s : subscribers) {
 				List<String> values = new ArrayList<String>();
 				for(FieldType ft : order) {
-					values.add(getByField(ft, s));
+					values.add(s.getByField(ft));
 				}
 				writer.write(values);
 			}
@@ -113,7 +117,8 @@ public class CsvImportFile extends ImportFile {
 			List<Subscriber> subs = c.readFile(input);
 			c.writeFile(subs, output);
 			for(Subscriber s : subs) {
-				System.out.println(s.vtdFormat());
+				VTDSubscriber vs = new VTDSubscriber(s);
+				System.out.println(vs.toString());
 			}
 		} catch(IOException e) {
 			// DO Nothing

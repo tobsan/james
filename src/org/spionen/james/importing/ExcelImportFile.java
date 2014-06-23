@@ -1,4 +1,4 @@
-package org.spionen.james;
+package org.spionen.james.importing;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -11,6 +11,9 @@ import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.spionen.james.FieldType;
+import org.spionen.james.subscriber.Subscriber;
+import org.spionen.james.subscriber.VTDSubscriber;
 
 public class ExcelImportFile extends ImportFile {
 	
@@ -23,37 +26,32 @@ public class ExcelImportFile extends ImportFile {
 			Sheet s = wb.getSheetAt(0);
 			
 			// Take first row, use to check order of fields
-			Row firstRow = s.getRow(0);
+			Row firstRow = s.getRow(s.getFirstRowNum());
 			FieldType[] order = new FieldType[firstRow.getLastCellNum() - firstRow.getFirstCellNum()];
 			int j = 0; 
 			for(int i = firstRow.getFirstCellNum(); i < firstRow.getLastCellNum(); i++, j++) {
 				Cell c = firstRow.getCell(i);
 				if(c != null) {
-					if(c.getCellType() == Cell.CELL_TYPE_NUMERIC) {
-						int d = new Double(c.getNumericCellValue()).intValue();
-						order[j] = getFieldType(d + "");
-					} else {
-						order[j] = getFieldType(c.getStringCellValue());
-					}
+					order[j] = FieldType.getFieldType(c.getStringCellValue());
 				}
 			}
 			// Then iterate through the rest of the rows
 			if(s.getLastRowNum() > 0) {
 				// LastRowNum is 0-indexed, so add 1
-				for(int i = 1; i < s.getLastRowNum()+1; i++) {
+				for(int i = s.getFirstRowNum()+1; i < s.getLastRowNum()+1; i++) {
 					Row r = s.getRow(i);
 					Subscriber sub = new Subscriber();
 					j = 0;
-					for(int k = r.getFirstCellNum(); k < r.getLastCellNum(); k++) {
+					// LastCellNum is also 0-indexed
+					for(int k = r.getFirstCellNum(); k < r.getLastCellNum()+1; k++, j++) {
 						Cell c = r.getCell(k);
 						if(c != null) {
 							if(c.getCellType() == Cell.CELL_TYPE_NUMERIC) {
 								String val = new Integer(new Double(c.getNumericCellValue()).intValue()).toString();
-								setByField(order[j], sub, val);
+								sub.setByField(order[j], val);
 							} else {
-								setByField(order[j], sub, c.getStringCellValue());
+								sub.setByField(order[j], c.getStringCellValue());
 							}
-							j++;
 						}
 					}
 					subscribers.add(sub);
@@ -66,10 +64,12 @@ public class ExcelImportFile extends ImportFile {
 	}
 
 	public void writeFile(List<Subscriber> subscribers, File file) {
+		// Create the workbook from file first
 		Workbook wb;
 		try {
 			wb = WorkbookFactory.create(file);
 		} catch(InvalidFormatException | IOException ife) {
+			// If it fails, just create a blank one
 			if(file.getName().endsWith(".xlsx")) {
 				wb = new XSSFWorkbook();
 			} else {
@@ -82,10 +82,11 @@ public class ExcelImportFile extends ImportFile {
 		for(int i = 0; i < sheets; i++) {
 			wb.removeSheetAt(i);
 		}
+		
 		Sheet s = wb.createSheet();
 		// Create top row of sheet with header data
 		Row top = s.createRow(0);
-		FieldType[] fields = standardOrder();
+		FieldType[] fields = FieldType.standardOrder();
 		for(int i = 0; i < fields.length; i++) {
 			Cell c = top.createCell(i);
 			c.setCellValue(fields[i].getDesc());
@@ -94,11 +95,15 @@ public class ExcelImportFile extends ImportFile {
 		// And then, iterate through all subscribers
 		for(int i = 0; i < subscribers.size(); i++) {
 			Subscriber sub = subscribers.get(i); 
-			int j = i+1;
-			Row r = s.createRow(j);
+			Row r = s.createRow(i+1);
 			for(int k = 0; k < fields.length; k++) {
-				Cell c = r.createCell(k);
-				c.setCellValue(getByField(fields[k], sub));
+				Cell c = r.createCell(k,Cell.CELL_TYPE_STRING);
+				String str = sub.getByField(fields[k]);
+				if(str != null) {
+					c.setCellValue(str);
+				} else {
+					c.setCellType(Cell.CELL_TYPE_BLANK);
+				}
 			}
 		}
 		
@@ -113,12 +118,13 @@ public class ExcelImportFile extends ImportFile {
 
 	// "Testing" code
 	public static void main(String[] args) throws FileNotFoundException, IOException {
-		String input = "/home/gargravarr/workspace/james/test2.xls";
-		String output = "/home/gargravarr/workspace/james/test2.xls";
+		String input = "/home/gargravarr/James/Registerfiler/Register Spionen nr 3 2013/Register Spionen (kopia).xls";
+		String output = "/home/gargravarr/James/Registerfiler/Register Spionen nr 3 2013/test.xls";
 		ExcelImportFile im = new ExcelImportFile();
 		List<Subscriber> ps = im.readFile(input);
 		for(Subscriber s : ps) {
-			System.out.println(s.vtdFormat());
+			VTDSubscriber vs = new VTDSubscriber(s);
+			System.out.println(vs.toString());
 		}
 		im.writeFile(ps, output);
 	}

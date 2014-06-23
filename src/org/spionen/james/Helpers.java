@@ -11,6 +11,8 @@ import java.io.*;
 import java.util.*;
 import java.text.*;
 
+import org.spionen.james.subscriber.Subscriber;
+
 public class Helpers {
 	// Metod för att rensa personnummer
 	public static String transformPNr(String pNr) {
@@ -62,79 +64,6 @@ public class Helpers {
 		return pNr;
 	}
 
-	/**
-	 * En metod f�r att l�sa prenumerantsobjekt fr�n en fil till en array.
-	 * 
-	 * @param f
-	 *            �r ett filobjekt inneh�llandes prenumerantsobjekt
-	 * @param p
-	 *            �r en array av klassen Prenumerant
-	 * @return Returnerar antalet fyllda poster i Array p
-	 * @throws IOException
-	 *             om inl�sningen g�r fel
-	 * 
-	 */
-
-	public static int _readFromFileToArray(File f, Subscriber[] p) throws IOException {
-		int i = 0;
-
-		Scanner fin = new Scanner(f);
-
-		while (fin.hasNext()) {
-
-			String listRow = fin.nextLine();
-			p[i] = new Subscriber(listRow);
-
-			i++;
-
-		}
-
-		fin.close();
-		return i;
-
-	}
-
-	/**
-	 * Method for checking if and where a Prenumerant object is in an array of
-	 * Prenumerant objects. Searches by looking for matches of ABNR.
-	 * 
-	 * @param p
-	 *            A Prenumerant Array - The Array to search in.
-	 * @param n
-	 *            An int - The length of the Prenumerant Array to search in.
-	 * @param a
-	 *            A String - The string to search for.
-	 * @return An int - The position of the Object in the Array if present.
-	 */
-
-	public static int binSearch(Subscriber[] p, int n, String a) {
-
-		int first = 0; // F�rsta index
-		int last = n - 1; // Sista index
-		int middle = (first + last) / 2; // Mitten index
-		int index = -1; // Returnerat index
-
-		while ((first <= last) && !(p[middle].getAbNr().compareTo(a) == 0)) {
-
-			if (p[middle].getAbNr().compareTo(a) < 0) {
-				first = middle + 1;
-			}
-
-			if (p[middle].getAbNr().compareTo(a) > 0) {
-				last = middle - 1;
-			}
-
-			middle = (first + last) / 2;
-
-		}
-
-		if (p[middle].getAbNr().compareTo(a) == 0) {
-			index = middle;
-		}
-
-		return index;
-	}
-
 	public static String todaysDate() {
 		DateFormat nuSE = new SimpleDateFormat("yyyyMMdd");
 		return nuSE.format(new Date());
@@ -153,6 +82,8 @@ public class Helpers {
 	 */
 
 	public static int numberOfFieldsInRow(String row, String delimiter) {
+		return row.split(delimiter).length;
+		/*
 		int numberOfFields = 0;
 		for (int i = 0; i < row.length(); i++) {
 			Character c = row.charAt(i);
@@ -162,30 +93,7 @@ public class Helpers {
 			}
 		}
 		return numberOfFields;
-	}
-
-	/**
-	 * En metod f�r att kontrollera och f�rbereda s� varje rad har korrekt antal
-	 * f�lt.
-	 * 
-	 * @param row
-	 *            string med ett antal f�lt som �r avgr�nsade med delimiter.
-	 * @param numberOfFields
-	 *            int med antalet f�lt som raden skall inneh�lla.
-	 * 
-	 * @return Rad med korrekt antal f�lt.
-	 */
-
-	public static String prepareRowForImport(String row, int numberOfFields) {
-
-		// int numberOfDelimiters = numberOfFields-1;
-
-		int numberOfDelimiters = Helpers.numberOfFieldsInRow(row, ";");
-		while (numberOfDelimiters < numberOfFields) {
-			row = row + ";";
-			numberOfDelimiters++;
-		}
-		return row;
+		*/
 	}
 
 	/**
@@ -212,46 +120,6 @@ public class Helpers {
 	public static void _deleteFile(String filePath) {
 		File temp = new File(filePath);
 		temp.delete();
-
-	}
-
-	/**
-	 * En metod f�r att ta bort en gammal fil och d�pa om den uppdaterade filen
-	 * med den gamla filens namn
-	 * 
-	 * @param oldFile
-	 *            String med s�kv�g till originalfilen som skall tas bort.
-	 * @param newFile
-	 *            String med s�kv�g till den nya filen som skall ers�tta
-	 *            originalfilen.
-	 * 
-	 */
-
-	public static void _replace_OldFile_with_NewFile(String oldFile, String newFile) {
-		File oldSource = new File(oldFile);
-		File newSource = new File(newFile);
-		oldSource.delete();
-		newSource.renameTo(oldSource);
-	}
-
-	/**
-	 * Metod f�r att avg�ra hur m�nga rader det finns i en fil.
-	 * 
-	 * @param filePath
-	 *            String med s�kv�g till filen.
-	 * 
-	 * @return Int med antalet rader.
-	 */
-	public static int numberOfRowsInFile(String filePath) throws IOException {
-		int i = 0;
-
-		// Open Source File
-		BufferedReader sourceFile = new BufferedReader(new FileReader(filePath));
-		while(sourceFile.readLine() != null) {
-			i++;
-		}
-		sourceFile.close();
-		return i;
 	}
 
 	public static void logStatusMessage(String message) {

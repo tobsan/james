@@ -4,7 +4,12 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionListener;
+import java.util.Calendar;
+
 import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
@@ -23,6 +28,11 @@ public class JamesFrame extends JFrame {
 
 	private static final long serialVersionUID = -5877293779273173169L;
 	private JPanel mainPanel;
+	
+	private JMenuBar menubar;
+	private JMenu settingsMenu;
+	private JMenuItem tbSettings;
+	private JMenuItem preferences;
 	
 	// James logotype
 	private JPanel logoPanel;
@@ -46,7 +56,8 @@ public class JamesFrame extends JFrame {
 	//Export
 	private JPanel exportPanel;
 	private JPanel vtdPanel;
-	private JButton exportButton;
+	private JButton exportVTDButton;
+	private JButton exportTBButton;
 	private JPanel vtabPanel;
 	private JButton komplettButton;
 	private JButton bringOnlyButton;
@@ -61,12 +72,24 @@ public class JamesFrame extends JFrame {
 	public JamesFrame() {
 		super();
 		initComponents();
+		disableAll();
 	}
 	
 	/**
 	 * Initialise all graphical components
 	 */
 	private void initComponents() {
+		// First, the menus
+		menubar = new JMenuBar();
+		settingsMenu = new JMenu("Settings");
+		tbSettings = new JMenuItem("TB/FTP Settings");
+		preferences = new JMenuItem("Preferences");
+		settingsMenu.add(tbSettings);
+		settingsMenu.add(preferences);
+		menubar.add(settingsMenu);
+		this.setJMenuBar(menubar);
+		
+		// Then, all panels
 		GridBagConstraints c = new GridBagConstraints();
 		c.ipadx = 5;
 		c.ipady = 5;
@@ -76,7 +99,7 @@ public class JamesFrame extends JFrame {
 		logoPanel = new JPanel();
 		logoPanel.setLayout(new GridBagLayout());
 		// TODO: Better path
-		logoLabel = new JLabel(new ImageIcon("/home/gargravarr/workspace/James/bin/james/resources/JamesMD.png"));
+		logoLabel = new JLabel(new ImageIcon("/home/gargravarr/workspace/james/src/org/spionen/james/resources/JamesMD.png"));
 		titleLabel = new JLabel("James");
 		float titleSize = 25;
 		titleLabel.setFont(titleLabel.getFont().deriveFont(titleSize));
@@ -97,13 +120,15 @@ public class JamesFrame extends JFrame {
 		issuePanel.setLayout(new GridBagLayout());
 		issuePanel.setBorder(BorderFactory.createTitledBorder("Aktuellt Nummer"));
 		issueYear = new JLabel ("År (YYYY)");
-		issueYearField = new JTextField("  2014  ");
+		String year = String.valueOf(Calendar.getInstance().get(Calendar.YEAR));
+		issueYearField = new JTextField(year);
 		issueYearField.setHorizontalAlignment(JTextField.CENTER);
 		issueNumber = new JLabel ("Nummer (N)");
-		issueNumberField = new JTextField("  1  ");
+		// TODO: Calculate a reasonable suggestion for issue number.
+		issueNumberField = new JTextField("1");
 		issueNumberField.setHorizontalAlignment(JTextField.CENTER);
-		createIssueButton = new JButton("Skapa angivet nummer");
-		getIssueButton = new JButton("Hämta angivet nummer");
+		createIssueButton = new JButton("Skapa nummer");
+		getIssueButton = new JButton("Hämta nummer");
 		c.gridx = 0;
 		c.gridy = 0;
 		issuePanel.add(issueYear, c);
@@ -136,16 +161,19 @@ public class JamesFrame extends JFrame {
 		exportPanel.setLayout(new GridBagLayout());
 		// The VTD/TB panel
 		vtdPanel = new JPanel();
-		vtdPanel.setBorder(BorderFactory.createTitledBorder("VTD & TB"));
+		vtdPanel.setBorder(BorderFactory.createTitledBorder("Distribution"));
 		vtdPanel.setLayout(new GridBagLayout());
-		exportButton = new JButton("Exportera");
+		exportVTDButton = new JButton("Export till VTD");
+		exportTBButton = new JButton("Export till TB");
 		c.gridx = 0;
 		c.gridy = 0;
-		vtdPanel.add(exportButton, c);
+		vtdPanel.add(exportVTDButton, c);
+		c.gridy = 1;
+		vtdPanel.add(exportTBButton, c);
 		c.gridheight = 1;
 		// The V-TAB panel
 		vtabPanel = new JPanel();
-		vtabPanel.setBorder(BorderFactory.createTitledBorder("V-Tab"));
+		vtabPanel.setBorder(BorderFactory.createTitledBorder("Tryck"));
 		vtabPanel.setLayout(new GridBagLayout());
 		komplettButton = new JButton("Komplett");
 		bringOnlyButton = new JButton("Bara Bring");
@@ -224,14 +252,70 @@ public class JamesFrame extends JFrame {
 		issueYearField.setEnabled(false);
 	}
 	
+	public boolean isLocked() {
+		return !issueNumberField.isEnabled() && !issueYearField.isEnabled();
+	}
+	
 	public void unlockIssue() {
-		issueNumberField.setEnabled(false);
-		issueYearField.setEnabled(false);
+		issueNumberField.setEnabled(true);
+		issueYearField.setEnabled(true);
+	}
+	
+	/**
+	 * Disable all buttons except create/load issue 
+	 */
+	public void disableAll() {
+		unlockIssue();
+		addressBaseButton.setEnabled(false);
+		bringOnlyButton.setEnabled(false);
+		bringSpecialButton.setEnabled(false);
+		exportVTDButton.setEnabled(false);
+		exportTBButton.setEnabled(false);
+		komplettButton.setEnabled(false);
+		nonVTDButton.setEnabled(false);
+		postenOnlyButton.setEnabled(false);
+		removeButton.setEnabled(false);
+		statsButton.setEnabled(false);
+		vtdMissButton.setEnabled(false);
+	}
+	
+	public void enableImport() {
+		addressBaseButton.setEnabled(true);
+	}
+	
+	public void enableStatistics() {
+		statsButton.setEnabled(true);
+	}
+	
+	public void enableDistribution() {
+		exportVTDButton.setEnabled(true);
+		exportTBButton.setEnabled(true);
+	}
+	
+	public void enableVTab() {
+		bringOnlyButton.setEnabled(true);
+		bringSpecialButton.setEnabled(true);
+		komplettButton.setEnabled(true);
+		postenOnlyButton.setEnabled(true);
+	}
+	
+	public void enableRegistryMaint() {
+		nonVTDButton.setEnabled(true);
+		vtdMissButton.setEnabled(true);
+		removeButton.setEnabled(true);
 	}
 	
 	/*
 	 * Only listeners below
 	 */
+	
+	public void addTBSettingsListener(ActionListener al) {
+		tbSettings.addActionListener(al);
+	}
+	
+	public void addPreferencesListener(ActionListener al) {
+		preferences.addActionListener(al);
+	}
 	
 	public void addCreateIssueListener(ActionListener al) {
 		createIssueButton.addActionListener(al);
@@ -250,7 +334,11 @@ public class JamesFrame extends JFrame {
 	}
 	
 	public void addVTDListener(ActionListener al) {
-		exportButton.addActionListener(al);
+		exportVTDButton.addActionListener(al);
+	}
+	
+	public void addTBListener(ActionListener al) {
+		exportTBButton.addActionListener(al);
 	}
 	
 	public void addKomplettListener(ActionListener al) {
@@ -279,5 +367,25 @@ public class JamesFrame extends JFrame {
 	
 	public void addRemoveListener(ActionListener al) {
 		removeButton.addActionListener(al);
+	}
+	
+	/**
+	 * A view class to represent the settings dialog
+	 * TODO: How to communicate result of this dialog back?
+	 * 
+	 * @author Tobias Olausson
+	 *
+	 */
+	private class SettingsFrame extends JFrame {
+		
+		public SettingsFrame() {
+			super();
+			this.initComponents();
+		}
+		
+		// Initialize components
+		private void initComponents() {
+			
+		}
 	}
 }

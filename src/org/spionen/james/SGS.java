@@ -8,7 +8,7 @@ import java.util.Collections;
 import javax.swing.JOptionPane;
 
 /**
- *
+ * This class does not seem to be used at all
  * @author Maxim
  */
 public class SGS {
