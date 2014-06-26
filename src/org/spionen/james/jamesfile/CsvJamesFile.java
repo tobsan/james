@@ -1,4 +1,4 @@
-package org.spionen.james.importing;
+package org.spionen.james.jamesfile;
 
 import org.spionen.james.FieldType;
 import org.spionen.james.subscriber.Subscriber;
@@ -14,6 +14,8 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import org.supercsv.io.CsvListReader;
 import org.supercsv.io.CsvListWriter;
@@ -28,7 +30,7 @@ import org.supercsv.prefs.CsvPreference;
  * @author Tobias Olausson
  *
  */
-public class CsvImportFile extends ImportFile {
+public class CsvJamesFile extends JamesFile {
 
 	public static final String[] csvExt = {".csv", ".txt"};
 	private CsvPreference pref;
@@ -39,7 +41,7 @@ public class CsvImportFile extends ImportFile {
 	 * @param preference the kind of CSV file this is
 	 * @param encoding the encoding used for the file
 	 */
-	public CsvImportFile(CsvPreference preference, String encoding) {
+	public CsvJamesFile(CsvPreference preference, String encoding) {
 		this.pref = preference;
 		this.encoding = encoding;
 	}
@@ -48,15 +50,15 @@ public class CsvImportFile extends ImportFile {
 	 * Creates a new instance of this class, with the north european
 	 * excel preference for CSV style, and ISO-8859-1 as encoding.
 	 */
-	public CsvImportFile() {
+	public CsvJamesFile() {
 		this.pref = CsvPreference.EXCEL_NORTH_EUROPE_PREFERENCE;
 		this.encoding = "ISO-8859-1";
 	}
 	
 	@Override
-	public List<Subscriber> readFile(File file) {
+	public Map<Long, Subscriber> readFile(File file) {
 		try {
-			List<Subscriber> subscribers = new ArrayList<Subscriber>();
+			Map<Long, Subscriber> subscribers = new TreeMap<Long, Subscriber>();
 			Reader r = new InputStreamReader(new FileInputStream(file), encoding);
 			CsvListReader reader = new CsvListReader(r, pref);
 			
@@ -74,19 +76,22 @@ public class CsvImportFile extends ImportFile {
 				for(int i = 0; i < row.size(); i++) {
 					sub.setByField(order[i], row.get(i));
 				}
-				subscribers.add(sub);
+				subscribers.put(sub.getAbNr(), sub);
 			}
 
 			reader.close();
 			return subscribers;
 		} catch(IOException e) {
-			return new ArrayList<Subscriber>();
+			return null;
 			//TODO: Handle this in a better way
 		}
 	}
 
 	@Override
-	public void writeFile(List<Subscriber> subscribers, File file) {
+	/**
+	 * TODO: Should the map be converted to a sorted list first, perhaps?
+	 */
+	public void writeFile(Map<Long,Subscriber> subscribers, File file) {
 		try {
 			Writer w = new PrintWriter(file, encoding);
 			CsvListWriter writer = new CsvListWriter(w, pref);
@@ -94,8 +99,9 @@ public class CsvImportFile extends ImportFile {
 			List<FieldType> order = Arrays.asList(FieldType.standardOrder());
 			writer.write(order);
 			// And then the rest of the columns
-			for(Subscriber s : subscribers) {
+			for(long abNr : subscribers.keySet()) {
 				List<String> values = new ArrayList<String>();
+				Subscriber s = subscribers.get(abNr);
 				for(FieldType ft : order) {
 					values.add(s.getByField(ft));
 				}
@@ -112,14 +118,18 @@ public class CsvImportFile extends ImportFile {
 	public static void main(String[] args) {
 		String input = "/home/marvin/workspace/doktorandtest.csv";
 		String output = "/home/marvin/workspace/doktorander.csv";
-		CsvImportFile c = new CsvImportFile();
+		CsvJamesFile c = new CsvJamesFile();
 		try {
-			List<Subscriber> subs = c.readFile(input);
-			c.writeFile(subs, output);
-			for(Subscriber s : subs) {
-				VTDSubscriber vs = new VTDSubscriber(s);
+			Map<Long,Subscriber> subs1 = c.readFile(input);
+			c.writeFile(subs1, output);
+			for(long abNr : subs1.keySet()) {
+				VTDSubscriber vs = new VTDSubscriber(subs1.get(abNr));
 				System.out.println(vs.toString());
 			}
+			Map<Long,Subscriber> subs2 = c.readFile(output);
+			
+			// Check so that the two maps contain the same elements
+			
 		} catch(IOException e) {
 			// DO Nothing
 		}

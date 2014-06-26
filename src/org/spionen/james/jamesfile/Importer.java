@@ -1,9 +1,8 @@
-package org.spionen.james.importing;
+package org.spionen.james.jamesfile;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -35,27 +34,19 @@ public class Importer {
         
         // Kolla Importfolder och skapa lista med filer för import. 
         String filter = "txt";
-         
-        ArrayList<File> listOfFilesInFolder = 
-                Helpers.makeArrayListOfFiles(inPath, filter);
+        List<File> listOfFilesInFolder = Helpers.makeArrayListOfFiles(inPath, filter);
         
-        for (int i = 0; i < listOfFilesInFolder.size(); i++) {
-               
-            System.out.println(listOfFilesInFolder.get(i));
-            
+        for(File f : listOfFilesInFolder) {
+        	System.out.println(f);
             // Kollar upp filens namn så källan kan anges i masterfilen
-            String fileName = listOfFilesInFolder.get(i).getName();       
+            String fileName = f.getName();       
             fileName = fileName.substring(0, fileName.indexOf("."));
-                 
-            ListHelpers.copyRows(listOfFilesInFolder.get(i), fileRows);
-            
+            ListHelpers.copyRows(f, fileRows);
             // Snygga till så alla rader har lika många fält
             fileRows = justifyRows(fileRows);
-            
             // Konvertera raderna och överföra till masterList
             convertRows(fileRows, masterList, fileName);
             fileRows.clear();
-            
             System.out.println("Mastern = " + masterList.size());
         }
   
@@ -117,8 +108,8 @@ public class Importer {
         	   p2 = masterList.get(i+1);
            }
 
-           if (p1.getAbNr().equals(p2.getAbNr()) && !(p1.getAbNr().equals("000"))) {
-               if (p1.getAbNr().length() >= 9) {
+           if (p1.getAbNr() == p2.getAbNr() && !(p1.getAbNr() == 000)) {
+               if(p1.getAbNr() >= 100000000) { // Length >= 9, check for personnummer
             	   // TODO: Why is this distinction here?
                    if (p1.getType().contains("STUDENT") || p1.getType().contains("DOKTORAND")) {
                        p2.setDistributor(Distributor.Duplicate);
@@ -154,13 +145,13 @@ public class Importer {
 
        // Create and Populate the ArraysList.
        ArrayList<Subscriber> noThanks = new ArrayList<Subscriber>();
-
        ListHelpers.readFromFileToList(GetFile.noThanksFilePath, noThanks);
+       
        int nc = 0; //NoThanks counter.
        System.out.println("NoThanks AL består av: " + noThanks.size() + " Objekt.");
 
        for (int i = 0; i < noThanks.size(); i++) {
-           String abNr = noThanks.get(i).getAbNr();
+           long abNr = noThanks.get(i).getAbNr();
            int index = ListHelpers.searchListForAbNr(masterList, abNr);
            if (index >= 0) {
                masterList.get(index).setDistributor(Distributor.NoThanks);
@@ -175,7 +166,7 @@ public class Importer {
        System.out.println("NoThanks AL består av: " + noThanks.size() + " Objekt.");
 
        // Log Status
-       Helpers.logStatusMessage("Filter Master: NoThanks-List - Started.");
+       Helpers.logStatusMessage("Filter Master: NoThanks-List - Finished.");
 
        // Log Status
        Helpers.logStatusMessage("Saving Files: Started.");

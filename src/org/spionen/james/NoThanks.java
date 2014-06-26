@@ -34,11 +34,12 @@ public class NoThanks
         System.out.println("NoThanks..: " + noThanks.size() + " poster.");
 
         //
-        String abNr = JOptionPane.showInputDialog(null,
+        long abNr = Long.parseLong(JOptionPane.showInputDialog(null,
                 "Skriv in prenumerationsnummer på den som"
-              + "\nönskar bli borttagen som mottagare av Spionen.");
+              + "\nönskar bli borttagen som mottagare av Spionen."));
 
-        if (abNr.length() <= 10 && !(abNr.length() < 4)) {
+        // if(abNr.length() <= 10 && !(abNr.length() < 4)) {
+        if(abNr <= 9999999999L && !(abNr < 1000)) {
             JOptionPane.showMessageDialog(null, "Du har angivit prenumerationsnummer: " + abNr);
 
             int index = ListHelpers.searchListForAbNr(master, abNr);

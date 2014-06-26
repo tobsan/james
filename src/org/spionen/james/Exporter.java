@@ -7,33 +7,43 @@ import javax.swing.*;
 import org.spionen.james.subscriber.Subscriber;
 import org.spionen.james.subscriber.Subscriber.Distributor;
 
+/**
+ * This class is only here for reference nowadays.
+ * @author Maxim
+ *
+ */
 public class Exporter {
 
     private static String exportFolder = GetFile.jamesExportPath;
     private static String filterPath = GetFile.jamesFilterPath;
     
+    /**
+     * This method does two things:
+     * 1) Run all filters on the master
+     * 		a) NoThanks
+     * 		b) VTD
+     * 		c) TB
+     * 		d) Bring
+     * 		e) Posten (if it didn't match anything else) 
+     * 
+     * 2) Check the master against the VTD misslist, set Bring or Posten 
+     * 	  as distributors for any matching subscribers instead.
+     * 
+     * @param year
+     * @param issue
+     * @throws FileNotFoundException
+     * @throws IOException
+     */
     public static void prepareMasterForExport(int year, int issue) throws FileNotFoundException, IOException {
 
         String masterFilePath = GetFile.currentMaster(year, issue);
         String notForVTDFilePath = GetFile.notForVTDFilePath;
         
+        // Filters
         Helpers.logStatusMessage("Activating Filters.");
-        
-        // Filterfiles
-        File vtd    = new File(filterPath + "VTD.txt");
-        File tb     = new File(filterPath + "TB.txt");
-        File bring  = new File(filterPath + "Bring.txt");
-        
-        // FilterArrays 
-        ArrayList<String> filterVTD     = new ArrayList<String>();
-        ArrayList<String> filterTB      = new ArrayList<String>();
-        ArrayList<String> filterBring   = new ArrayList<String>();
-        
-        filterVTD = Filter.createFilterArray(vtd);
-        filterTB = Filter.createFilterArray(tb);
-        filterBring = Filter.createFilterArray(bring);
-        
-        Helpers.logStatusMessage("Filters Activated.");
+        Filter filterVTD = new Filter(Distributor.VTD, filterPath + "VTD.txt");
+        Filter filterTB = new Filter(Distributor.TB, filterPath + "TB.txt");
+        Filter filterBring = new Filter(Distributor.Bring, filterPath + "Bring.txt");
         
         // Log status
         Helpers.logStatusMessage("Preparing Master for Export - Started.");
@@ -46,9 +56,6 @@ public class Exporter {
         
         System.out.println("Master AL består av: " + master.size() + " Objekt.");
 
-        //Placeholder Prenumerant
-        Subscriber pren = null;
-
         // Filter Addresses
 
         int t = 0; //TB Counter
@@ -57,31 +64,30 @@ public class Exporter {
         int p = 0; //Posten Counter
         int n = 0; //NoThanks Counter
 
-        for (int i = 0; i < master.size(); i++) {
+        // First, check all subscribers against the available filters
+        for(Subscriber s : master) {
+            int postNr = Integer.parseInt(s.getZipCode());
 
-            pren = master.get(i);
-            String postNr = pren.getZipCode();
-
-            if (pren.getDistributor() != Distributor.NoThanks) {
-                if (pren.isOKforPaperRoute()) {
-                    if (Filter.checkIfInRange(postNr, filterTB)) {
-                        pren.setDistributor(Distributor.TB);
+            if(s.getDistributor() != Distributor.NoThanks) {
+                if (s.isOKforPaperRoute()) {
+                	if(filterVTD.matches(postNr)) {
+                		s.setDistributor(Distributor.VTD);
+                		v++;
+                	} else if(filterTB.matches(postNr)) {
+                        s.setDistributor(Distributor.TB);
                         t++;
-                    } else if (Filter.checkIfInRange(postNr, filterVTD)) {
-                            pren.setDistributor(Distributor.VTD);
-                            v++;
-                    } else if (Filter.checkIfInRange(postNr, filterBring)) {
-                            pren.setDistributor(Distributor.Bring);
+                    } else if(filterBring.matches(postNr)) {
+                            s.setDistributor(Distributor.Bring);
                             b++;
                     } else {
-                        pren.setDistributor(Distributor.Posten);
+                        s.setDistributor(Distributor.Posten);
                         p++;
                     }
-                } else if (Filter.checkIfInRange(postNr, filterBring)) {
-                        pren.setDistributor(Distributor.Bring);
+                } else if(filterBring.matches(postNr)) {
+                        s.setDistributor(Distributor.Bring);
                         b++;
                 } else {
-                    pren.setDistributor(Distributor.Posten);
+                    s.setDistributor(Distributor.Posten);
                     p++;
                 }
             } else {
@@ -95,41 +101,25 @@ public class Exporter {
         System.out.println("NotForVTD AL består av: " + notForVTD.size() + " Objekt.");
 
         int nv = 0; //NotForVTD counter.
-        for (int i = 0; i < notForVTD.size(); i++) {
-            String abNr = notForVTD.get(i).getAbNr();
+        for(Subscriber s : notForVTD) {
+            long abNr = s.getAbNr();
             int index = ListHelpers.searchListForAbNr(master, abNr);
             if (index >= 0) {
+                s = master.get(index);
+                int postNr = Integer.parseInt(s.getZipCode());
 
-                pren = master.get(index);
-                String postNr = pren.getZipCode();
-
-                if (pren.getDistributor() != Distributor.NoThanks) {
-
-                    if (Filter.checkIfInRange(postNr, filterBring)) {
-                        pren.setDistributor(Distributor.Bring);
-                        pren.setNote("VTD-No-GO");
+                if (s.getDistributor() != Distributor.NoThanks) {
+                    if(filterBring.matches(postNr)) {
+                        s.setDistributor(Distributor.Bring);
+                        s.setNote("VTD-No-GO");
                         v--;
                         b++;
                     } else {
-                        pren.setDistributor(Distributor.Posten);
-                        pren.setNote("VTD-No-GO");
+                        s.setDistributor(Distributor.Posten);
+                        s.setNote("VTD-No-GO");
                         v--;
                         p++;
                     }
-                                       
-//                    if (master.get(index).isBring()) {
-//
-//                        master.get(index).setDistributor("B");
-//                        v--;
-//                        b++;
-//
-//                    } else {
-//
-//                        master.get(index).setDistributor("P");
-//                        v--;
-//                        p++;
-//                    }
-
                     nv++;
                 }
            }
@@ -254,11 +244,11 @@ public class Exporter {
         //Create VTD-Start-List
         for (i = 0; i < master.size(); i++) {
             pNew = master.get(i);
-            String abNr = pNew.getAbNr();
+            long abNr = pNew.getAbNr();
             int j = ListHelpers.searchListForAbNr(prevMaster, abNr);
             if (j >= 0) {
                 pOld = prevMaster.get(j);
-                if (!(pNew.comparePrenumerant(pOld))) {
+                if (!(pNew.equals(pOld))) {
                     vtdStart.add(pNew);
                 }
             } else {vtdStart.add(pNew);}
@@ -269,30 +259,18 @@ public class Exporter {
         for (i = 0; i < prevMaster.size(); i++) {
         
             pOld = prevMaster.get(i);
-            String abNr = pOld.getAbNr();
+            long abNr = pOld.getAbNr();
             
             int j = ListHelpers.searchListForAbNr(master, abNr);
             if (j >= 0) {
                 pNew = master.get(j);
-                if (!(pOld.comparePrenumerant(pNew))) {
+                if (!(pOld.equals(pNew))) {
                     vtdStopp.add(pOld);
                 }             
             } else {vtdStopp.add(pOld);}
         }
 
         System.out.println("StoppLista = " + vtdStopp.size());
-
-        //Save Export List
-        String targetFilePathStart = exportFolder +
-                                            "VTD_spionen_start_"+today+".txt";
-        //ListHelpers.exportListForVTD(vtdStart, targetFilePathStart);
-        //ListHelpers.exportListAsTB(vtdStart, targetFilePathStart, true);
-
-        String targetFilePathStopp = exportFolder +
-                                            "VTD_spionen_stopp_"+today+".txt";
-        //ListHelpers.exportListForVTD(vtdStopp, targetFilePathStopp);
-        //ListHelpers.exportListAsTB(vtdStopp, targetFilePathStopp, false);
-
         String targetFilePath = exportFolder + "VTD_spionen_"+today+".txt";
         ListHelpers.exportListAsTB(vtdStart, vtdStopp, targetFilePath, distributionsdatum);
         
@@ -316,8 +294,8 @@ public class Exporter {
         Helpers.makeSureFolderExists(exportFolder);
         String today = Helpers.todaysDate();
 
-        ArrayList<Subscriber> master         = new ArrayList<Subscriber>();
-        ArrayList<Subscriber> prevMaster     = new ArrayList<Subscriber>();
+        ArrayList<Subscriber> master        = new ArrayList<Subscriber>();
+        ArrayList<Subscriber> prevMaster    = new ArrayList<Subscriber>();
         ArrayList<Subscriber> tbStart       = new ArrayList<Subscriber>();
         ArrayList<Subscriber> tbStopp       = new ArrayList<Subscriber>();
 
@@ -333,7 +311,7 @@ public class Exporter {
 
         while (i < master.size()) {
             p = master.get(i);
-            if (!(p.getDistributor().equals("T"))) {
+            if (p.getDistributor() != Distributor.TB) {
                 master.remove(p);
                 i--;
             }
@@ -346,7 +324,7 @@ public class Exporter {
         System.out.println("Array-Size = " + prevMaster.size() + " PM-Size(Total)");
         while (i < prevMaster.size()) {
             p = prevMaster.get(i);
-            if (!(p.getDistributor().equals("T"))) {
+            if (p.getDistributor() != Distributor.TB) {
                 prevMaster.remove(p);
                 i--;
             }
@@ -361,15 +339,17 @@ public class Exporter {
         //Create TB-Start-List
         for (i = 0; i < master.size(); i++) {
             pNew = master.get(i);
-            String abNr = pNew.getAbNr();
+            long abNr = pNew.getAbNr();
             
             int j = ListHelpers.searchListForAbNr(prevMaster, abNr);
             if (j >= 0) {
                 pOld = prevMaster.get(j);
-                if (!(pNew.comparePrenumerant(pOld))) {
+                if (!pNew.equals(pOld)) {
                     tbStart.add(pNew);
                 }
-            } else {tbStart.add(pNew);}
+            } else {
+            	tbStart.add(pNew);
+            }
         }
 
         System.out.println("StartLista = " + tbStart.size());
@@ -377,32 +357,19 @@ public class Exporter {
         //Create TB-Stopp-List
         for (i = 0; i < prevMaster.size(); i++) {
             pOld = prevMaster.get(i);
-            String abNr = pOld.getAbNr();
+            long abNr = pOld.getAbNr();
             
             int j = ListHelpers.searchListForAbNr(master, abNr);
             if (j >= 0) {
                 pNew = master.get(j);
-                if (!(pOld.comparePrenumerant(pNew))) {
+                if (!(pOld.equals(pNew))) {
                     tbStopp.add(pOld);
                 }             
             } else {tbStopp.add(pOld);}
         }
 
         System.out.println("StoppLista = " + tbStopp.size());
-
-        //Save Export List
-        String targetFilePathStart = exportFolder +
-                                            "TB_spionen_start_"+today+".txt";
-        //ListHelpers.exportListForVTD(tbStart, targetFilePathStart);
-        //ListHelpers.exportListAsTB(tbStart, targetFilePathStart, true);
-
-        String targetFilePathStopp = exportFolder +
-                                            "TB_spionen_stopp_"+today+".txt";
-        //ListHelpers.exportListForVTD(tbStopp, targetFilePathStopp);
-        //ListHelpers.exportListAsTB(tbStopp, targetFilePathStopp, false);
-
         String targetFilePath = exportFolder + "TB_spionen_"+today+".txt";
-        
         ListHelpers.exportListAsTB(tbStart, tbStopp, targetFilePath, distributionsdatum);
         
         // User Feedback
@@ -504,10 +471,10 @@ public class Exporter {
         int p = 0; //Posten Counter
         for (int i = 0;  i < master.size(); i++) {
             Distributor filter = master.get(i).getDistributor();
-                if (filter == Distributor.Posten) {
-                    export.add(master.get(i));
-                    p++;
-                }
+            if (filter == Distributor.Posten) {
+                export.add(master.get(i));
+                p++;
+            }
         }
 
         //Save Export List
@@ -540,17 +507,16 @@ public class Exporter {
         int p = 0; //Posten Counter
 
         for (int i = 0;  i < master.size(); i++) {
-            Distributor filter = master.get(i).getDistributor();
-                if (filter == Distributor.Bring) {
+            Distributor dist = master.get(i).getDistributor();
+            if(dist == Distributor.Bring) {
+                export.add(master.get(i));
+                b++;
+            } else if(dist == Distributor.Posten) {
+                if (master.get(i).getAbNr() <= 99999) { // Length <= 5
                     export.add(master.get(i));
-                    b++;
+                    p++;
                 }
-                if (filter == Distributor.Posten) {
-                    if (master.get(i).getAbNr().length() <= 5) {
-                        export.add(master.get(i));
-                        p++;
-                    }
-                }
+            }
         }
 
         //Save Export List

@@ -4,9 +4,7 @@ import org.spionen.james.FieldType;
 
 public class Subscriber implements Comparable<Subscriber> {
     
-    //TODO Make abNr to Long.
-    
-    private String abNr;
+    private long abNr;
     private String firstName;
     private String lastName;
     private String coAddress;
@@ -19,17 +17,18 @@ public class Subscriber implements Comparable<Subscriber> {
     private String note;
     
     public Subscriber() {
-    	abNr = firstName = lastName = "";
+    	abNr = 0; 
+    	firstName = lastName = "";
     	coAddress = streetAddress = zipCode = "";
     	city = country = type = note = "";
     	distributor = null;
     }
 
-    public String getAbNr() {
+    public long getAbNr() {
 		return abNr;
 	}
 
-	public void setAbNr(String abNr) {
+	public void setAbNr(long abNr) {
 		this.abNr = abNr;
 	}
 
@@ -111,7 +110,7 @@ public class Subscriber implements Comparable<Subscriber> {
 	
 	public String getByField(FieldType ft) {
 		switch(ft) {
-		case SubscriberID: return getAbNr();
+		case SubscriberID: return String.valueOf(getAbNr());
 		case FirstName: return getFirstName();
 		case LastName: return getLastName();
 		case CoAddress: return getCoAddress();
@@ -130,7 +129,12 @@ public class Subscriber implements Comparable<Subscriber> {
 	
 	public void setByField(FieldType ft, String data) {
 		switch(ft) {
-		case SubscriberID: setAbNr(data); break;
+		case SubscriberID: 
+			try{
+				long val = Long.parseLong(cleanID(data));
+				setAbNr(val);
+			} catch(NumberFormatException e) {}
+			break;
 		case FirstName: setFirstName(data); break;
 		case LastName: setLastName(data); break;
 		case CoAddress: setCoAddress(data); break;
@@ -143,6 +147,14 @@ public class Subscriber implements Comparable<Subscriber> {
 		case Note: setNote(data); break;
 		default: return; // Discard anything else
 		}		
+	}
+	
+	private static String cleanID(String data) {
+		data = data.replaceAll("-", "");
+		data = data.replaceAll("T", "0");
+		data = data.replaceAll("P", "0");
+		data = data.replaceAll("R", "0");
+		return data;
 	}
 
 	public String getType() {
@@ -228,15 +240,17 @@ public class Subscriber implements Comparable<Subscriber> {
             return false;
         }
 
-        if (abNr.equals("000")) {
+        if (abNr == 0) {
             note = "Ej VTD/TB adress";
             return false;
         } 
         return true;
     }
 
-    public boolean comparePrenumerant(Subscriber p) {
-    	if (abNr.equals(p.getAbNr())) {
+    @Override
+    public boolean equals(Object o) {
+    	Subscriber p = (Subscriber)o;
+    	if (abNr == p.getAbNr()) {
     		if (zipCode.equals(p.getZipCode())) {
     			if (streetAddress.equals(p.getStreetAddress())) {
     				return true;
@@ -248,7 +262,9 @@ public class Subscriber implements Comparable<Subscriber> {
 
     @Override
     public int compareTo(Subscriber p) {
-        return this.getAbNr().compareTo(p.getAbNr());
+    	long a = this.getAbNr();
+    	long b = p.getAbNr();
+    	return a > b ? 1 : a < b ? -1 : 0;
     }
 
     public enum Distributor {

@@ -16,7 +16,7 @@ public class SubscriberDecorator extends Subscriber {
 		sub = s;
 	}
 	
-	public String getAbNr() {
+	public long getAbNr() {
 		return sub.getAbNr();
 	}
 	public String getFirstName() {
@@ -61,19 +61,16 @@ public class SubscriberDecorator extends Subscriber {
 	public boolean isOKforPaperRoute() {
 		return sub.isOKforPaperRoute();
 	}
-	public boolean comparePrenumerant(Subscriber p) {
-		return sub.comparePrenumerant(p);
+	public boolean equals(Object p) {
+		return sub.equals(p);
 	}
 	public int compareTo(Subscriber p) {
 		return sub.compareTo(p);
 	}
-	public boolean equals(Object obj) {
-		return sub.equals(obj);
-	}
 	public int hashCode() {
 		return sub.hashCode();
 	}
-	public void setAbNr(String abNr) {
+	public void setAbNr(long abNr) {
 		sub.setAbNr(abNr);
 	}
 	public void setFirstName(String firstName) {

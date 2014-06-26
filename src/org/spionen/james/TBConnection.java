@@ -59,18 +59,16 @@ public class TBConnection {
 	 */
 	public void sendFile(String filename) {
 		File f = new File(filename);
-		if(client.isConnected()) {
-			if(f.exists() && f.canRead()) {
-				try {
-					InputStream is = new FileInputStream(filename);
-					client.appendFile("FTPFIN01", is);
-					client.sendCommand("QUOT", "RCMD \"call FTCLIN" + channel + "\"");
-					client.sendCommand("CLOSE");
-					client.logout();
-				} catch(IOException e) {
-					e.printStackTrace();
-					// Do....eh, something?
-				}
+		if(client.isConnected() && f.exists() && f.canRead()) {
+			try {
+				InputStream is = new FileInputStream(filename);
+				client.appendFile("FTPFIN01", is);
+				client.sendCommand("QUOT", "RCMD \"call FTCLIN" + channel + "\"");
+				client.sendCommand("CLOSE");
+				client.logout();
+			} catch(IOException e) {
+				e.printStackTrace();
+				// Do....eh, something?
 			}
 		}
 	}

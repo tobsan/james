@@ -1,17 +1,15 @@
 package org.spionen.james;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
-import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
-import org.spionen.james.importing.ImportFile;
-import org.spionen.james.importing.ImportFileFactory;
+import org.spionen.james.jamesfile.JamesFile;
+import org.spionen.james.jamesfile.JamesFileFactory;
 import org.spionen.james.subscriber.Subscriber;
-import org.spionen.james.subscriber.VTDSubscriber;
+import org.spionen.james.subscriber.Subscriber.Distributor;
 
 /**
  * This should serve well to be some kind of state class
@@ -19,37 +17,21 @@ import org.spionen.james.subscriber.VTDSubscriber;
  * @author Tobias Olausson
  */
 
-public class MasterFile implements Comparable<MasterFile>, Serializable {
+public class MasterFile implements Serializable {
     
 	private static final long serialVersionUID = -5687392826237960600L;
     private int year; 
     private int issue; 
-    private String fileName; 
     
     // These two contain ALL subscribers together.
-    private List<Subscriber> allSubscribers;
-	private List<Subscriber> rejects;
-	
+    private Map<Long,Subscriber> subscribers;
     private State state;
-    
-    /**
-     * @deprecated
-     * @param masterFileName
-     */
-    public MasterFile(String masterFileName) {
-        
-        year = Integer.parseInt(masterFileName.split("[-_.]")[0]);
-        issue = Integer.parseInt(masterFileName.split("[-_.]")[1]);
-        fileName = masterFileName; 
-    }
     
     public MasterFile(int year, int issue) {
     	this.year = year;
     	this.issue = issue;
     	this.state = State.Init;
-    	this.fileName = year + "-" + issue + "_Master.txt"; 
-    	allSubscribers = new ArrayList<Subscriber>();
-    	rejects = new ArrayList<Subscriber>();
+    	subscribers = new TreeMap<Long,Subscriber>();
     }
     
     public void importAll(String directory) {
@@ -57,102 +39,130 @@ public class MasterFile implements Comparable<MasterFile>, Serializable {
 		importAll(dir);
 	}
     
+    /**
+     * This follows the same structure as Importer.importAll:
+     * 	1) Read all files and merge lists of subscribers
+     *  2) Remove all malformed addresses
+     *  3) (Remove duplicates) - a Map cannot have duplicates
+     *  4) Missing: Remove all subscribers that have declined to have the paper
+     * @param directory
+     */
     public void importAll(File directory) {
     	if(directory.isDirectory()) {
 			File[] files = directory.listFiles();
 			for(File f : files) {
 				try {
-					ImportFile imp = ImportFileFactory.createImportFile(f.getAbsolutePath());
+					JamesFile imp = JamesFileFactory.createImportFile(f.getAbsolutePath());
 					System.out.println(f.getAbsolutePath());
-					List<Subscriber> subs = imp.readFile(f);
-					allSubscribers.addAll(subs);
+					Map<Long,Subscriber> subs = imp.readFile(f);
+					subscribers.putAll(subs);
+					System.out.println("Master size: " + subscribers.size());
 				} catch(IllegalArgumentException e) {
-					// TODO: Do something reasonable here
-					// e.printStackTrace();
+					// This is thrown if files that do not match extensions 
+					// are found in the directory, so it is not really a problem
 				}
 			}
 		}
-		Collections.sort(allSubscribers);
 		removeBadAddresses();
-		removeDuplicates();
     }
     
     /**
 	 * Remove addresses that are invalid
 	 */
-	public void removeBadAddresses() {
-		Iterator<Subscriber> it = allSubscribers.iterator();
-		while(it.hasNext()) {
-			Subscriber s = it.next();
+	public Map<Long,Subscriber> removeBadAddresses() {
+		Map<Long,Subscriber> result = new TreeMap<Long,Subscriber>();
+		Iterator<Map.Entry<Long,Subscriber>> iter = subscribers.entrySet().iterator();
+		while(iter.hasNext()) {
+			Map.Entry<Long, Subscriber> entry = iter.next();
+			Subscriber s = entry.getValue();
 			if(!s.correctAdress()) {
-				s.setDistributor("Invalid");
-				rejects.add(s);
-				it.remove();
+				s.setDistributor(Distributor.Invalid);
+				result.put(entry.getKey(), s);
+				iter.remove();
 			}
 		}
+		System.out.println("Invalid addresses: " + result.size());
+		return result;
 	}
 	
 	/**
-	 * Assumes that the list of subscribers is sorted
+	 * Mark all subscribers that do not want to get the paper.
+	 * This differs from a filter in that it contains individual subscribers
+	 * and not just zip codes.
 	 */
-	public void removeDuplicates() {
-		Iterator<Subscriber> it = allSubscribers.iterator();
+	public Map<Long,Subscriber> removeDeclines(Map<Long,Subscriber> declines) {
+		Map<Long,Subscriber> result = new TreeMap<Long,Subscriber>();
+		Iterator<Map.Entry<Long,Subscriber>> it = declines.entrySet().iterator();
 		while(it.hasNext()) {
-			Subscriber s1 = it.next();
-			if(it.hasNext()) {
-				Subscriber s2 = it.next();
-				if(s1.comparePrenumerant(s2)) {
-					s2.setDistributor("Duplicate");
-					rejects.add(s2);
-					it.remove();
-				}
+			Map.Entry<Long,Subscriber> entry = it.next();
+			Subscriber s = entry.getValue();
+			s.setDistributor(Distributor.NoThanks);
+			result.put(entry.getKey(), s);
+			it.remove();
+		}
+		return result;
+	}
+	
+	public Map<Long,Subscriber> runFilter(Filter f) {
+		Map<Long,Subscriber> subs = new TreeMap<Long,Subscriber>();
+		for(long abNr : subscribers.keySet()) {
+			Subscriber s = subscribers.get(abNr);
+			if(f.apply(s)) {
+				subs.put(abNr, s);
 			}
+		}
+		return subs;
+	}
+	
+	/**
+	 * This method checks this masterfile against another one, generating a 
+	 * list of all stops and all starts (diffs of any kind).
+	 *  
+	 * @param mf the MasterFile to compare with
+	 * @return a Pair with all that are in this but not the other masterfile
+	 * 		   as its first part, and all that are in the other masterfile but
+	 * 		   not in this one as its second part.
+	 */
+	public Pair<Map<Long,Subscriber>, Map<Long,Subscriber>> checkAgainst(MasterFile mf) {
+		return checkAgainst(mf,true);
+	}
+	
+	private Pair<Map<Long,Subscriber>, Map<Long,Subscriber>> checkAgainst(MasterFile mf, boolean crossCheck) {
+		Map<Long,Subscriber> result = new TreeMap<Long,Subscriber>();
+		for(long abNr : subscribers.keySet()) {
+			if(mf.contains(abNr)) {
+				result.put(abNr, subscribers.get(abNr));
+			}
+		}
+		if(crossCheck) { // To prevent infinite recursion
+			Pair<Map<Long,Subscriber>, Map<Long,Subscriber>> tmp = mf.checkAgainst(mf, false);
+			return new Pair<Map<Long,Subscriber>, Map<Long,Subscriber>>(result, tmp.first());
+		} else {
+			return new Pair<Map<Long,Subscriber>, Map<Long,Subscriber>>(result, null);
 		}
 	}
 	
 	/**
-	 * Removes all Subscribers that do not want to get the paper
-	 * TODO: Make a nicer flow of data here. valid/invalid extension
+	 * Delegate to the map of subscribers
 	 */
-	public void removeDeclines(String declineFilePath) {
-		try {
-			List<Subscriber> declines;
-			ImportFile imp = ImportFileFactory.createImportFile(declineFilePath);		
-			declines = imp.readFile(declineFilePath);
-			for(Subscriber s : declines) {
-				s.setDistributor("NoThanks");
-			}
-			rejects.addAll(declines);
-		} catch(IOException | IllegalArgumentException e) {
-			e.printStackTrace();
-		}
+	public boolean contains(long abNr) {
+		return subscribers.containsKey(abNr);
 	}
 	
-	public List<Subscriber> runFilter(String filterPath) {
-		List<Subscriber> subscribers = new ArrayList<Subscriber>();
-		Filter filter = new Filter();
-		filter.readFile(filterPath);
-		for(Subscriber s : allSubscribers) {
-			try {
-				int zipcode = Integer.parseInt(s.getZipCode());
-				if(filter.matches(zipcode)) {
-					subscribers.add(s);
-				}
-			} catch(NumberFormatException ne) {
-				// This is just some random output when there are errors
-				VTDSubscriber vs = new VTDSubscriber(s);
-				System.out.println(vs.toString());
-				System.exit(1);
+	public Map<Long,Subscriber> exportByDistributor(Distributor d) {
+		Map<Long,Subscriber> result = new TreeMap<Long,Subscriber>();
+		for(Map.Entry<Long,Subscriber> entry : subscribers.entrySet()) {
+			Subscriber s = entry.getValue();
+			if(s.getDistributor() == d) {
+				result.put(entry.getKey(), s);
 			}
 		}
-		return subscribers;
+		return result;
 	}
 	
-    
-	public int size() { return allSubscribers.size(); }
+	public int size() { return subscribers.size(); }
     public int getYear() { return year; }
     public int getIssue() { return issue; }    
-    public String getFileName() { return fileName; }
     
     public State getState() { return state; }
     public void nextState() {
@@ -173,14 +183,6 @@ public class MasterFile implements Comparable<MasterFile>, Serializable {
     	}
     }
     
-    /**
-     * @deprecated
-     * @return a string description of this issue
-     */
-    public String getDescription() {
-        return "Nr. " + issue + " " + year;
-    }
-    
     public MasterFile nextIssue() {
         if (issue < 8) {
         	return new MasterFile(year, issue+1);
@@ -195,11 +197,6 @@ public class MasterFile implements Comparable<MasterFile>, Serializable {
         } else {
         	return new MasterFile(year-1, 8);
         }
-    }
-    
-    @Override 
-    public int compareTo(MasterFile mf) {
-        return this.getFileName().compareTo(mf.getFileName());
     }
     
     public enum State {

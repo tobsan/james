@@ -3,16 +3,15 @@ package org.spionen.james;
 import java.io.File;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.spionen.james.subscriber.Subscriber;
+import org.spionen.james.subscriber.Subscriber.Distributor;
 import org.supercsv.io.CsvListReader;
 import org.supercsv.prefs.CsvPreference;
 
@@ -28,28 +27,35 @@ public class Filter {
 	private Set<Integer> zipCodes;
 	private CsvPreference pref; 
 	private String encoding;
+	private Distributor dist;
+	private String filepath;
 	
 	// Create this filter
-	public Filter() {
+	public Filter(Distributor dist, String filepath) {
+		this.dist = dist;
+		this.filepath = filepath;
 		this.pref = CsvPreference.EXCEL_NORTH_EUROPE_PREFERENCE;
 		this.encoding = "ISO-8859-1";
 		this.zipCodes = new HashSet<Integer>();
+		readFile();
 	}
 	
 	/**
 	 * Reads the filter file and populate the set
 	 */
-	public void readFile(String filename) {
-		File file = new File(filename);
+	private void readFile() {
+		File file = new File(filepath);
 		if(file.isFile() && file.exists()) {
 			try {
 				Reader r = new InputStreamReader(new FileInputStream(file), encoding);
 				CsvListReader reader = new CsvListReader(r, pref);
 				List<String> row;
 				while((row = reader.read()) != null) {
+					// A single number
 					if(row.size() == 1) {
 						Integer i = Integer.parseInt(row.get(0));
 						zipCodes.add(i);
+					// A span of numbers
 					} else if(row.size() == 2) {
 						Integer i = Integer.parseInt(row.get(0));
 						Integer j = Integer.parseInt(row.get(1));
@@ -77,47 +83,23 @@ public class Filter {
 	}
 	
 	/**
-	* @deprecated
-	* Old filter creation code. Does not use CSV, but an own format
-	* Format: XXXXX-YYYYY or XXXXX. Lines beginning with > are ignored
-    */
-    public static ArrayList<String> createFilterArray(File fromFile) 
-                                        throws FileNotFoundException, 
-                                               IOException {
-    
-        ArrayList<String> fileRows = new ArrayList<String>();
-        ArrayList<String> postNrs  = new ArrayList<String>();
-        ListHelpers.copyRows(fromFile, fileRows);
-        
-        for (int i = 0; i < fileRows.size(); i++) {
-            String row = fileRows.get(i).trim();
-            if (!(row.startsWith(">"))) {
-                if (row.length() == 5) {
-                    postNrs.add(row);
-                    //System.out.println(row);
-                } else {
-                    String[] s = row.split("-");
-                    int a = Integer.parseInt(s[0]);
-                    int o = Integer.parseInt(s[1]);
-                    String x;
-                    for (int y = a; y <= o; y++) {
-                        x = Integer.toString(y); 
-                        postNrs.add(x);
-                    }
-                }
-            }
-        }
-        Collections.sort(postNrs);
-        return postNrs;
-    }
-    
-    /**
-     * @deprecated
-     * Old method to check if zip code is covered in array
-     */
-    public static boolean checkIfInRange(String postNr, ArrayList<String> inArray) {
-        int i = Collections.binarySearch(inArray, postNr);
-        return i > 0;
-    } 
+	 * Checks if a Subscriber matches this filter, and if so, sets its
+	 * distributor to the supplied value.
+	 * 
+	 * @param s the subscriber 
+	 * @return true if the filter matched, false otherwise
+	 */
+	public boolean apply(Subscriber s) {
+		try {
+			int zip = Integer.parseInt(s.getZipCode());
+			if(zipCodes.contains(zip)) {
+				s.setDistributor(dist);
+				return true;
+			}
+			return false;
+		} catch(NumberFormatException e) {
+			return false;
+		}
+	}
     
 }

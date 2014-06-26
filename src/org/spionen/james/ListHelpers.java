@@ -109,20 +109,20 @@ public class ListHelpers {
     /**
      * Implements a binary search
      */
-    public static int searchListForAbNr(ArrayList<Subscriber> al, String a) {
+    public static int searchListForAbNr(ArrayList<Subscriber> al, long a) {
 
         int first = 0;                  // Första index
         int last = al.size() - 1;       // Sista index
         int middle = (first + last)/2;  // Mitten index
         int index = -1;                 // Returnerat index
 
-        while ((first <= last) && !(al.get(middle).getAbNr().compareTo(a)==0)) {
-            if (al.get(middle).getAbNr().compareTo(a)< 0) {first = middle + 1;}
-            if (al.get(middle).getAbNr().compareTo(a)> 0) {last = middle - 1;}
+        while ((first <= last) && !(al.get(middle).getAbNr() == a)) {
+            if (al.get(middle).getAbNr() < a) {first = middle + 1;}
+            if (al.get(middle).getAbNr() > a) {last = middle - 1;}
             middle = (first + last) / 2;
         }
 
-        if (al.get(middle).getAbNr().compareTo(a)==0) {index = middle;}
+        if (al.get(middle).getAbNr() == a) {index = middle;}
         return index;
 
     }

@@ -1,9 +1,9 @@
-package org.spionen.james.importing;
+package org.spionen.james.jamesfile;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.List;
+import java.util.Map;
 
 import org.spionen.james.subscriber.Subscriber;
 
@@ -14,10 +14,10 @@ import org.spionen.james.subscriber.Subscriber;
  * @author Tobias Olausson
  *
  */
-public abstract class ImportFile {
+public abstract class JamesFile {
 	
-	public abstract List<Subscriber> readFile(File file);
-	public List<Subscriber> readFile(String filename) throws IOException, FileNotFoundException {
+	public abstract Map<Long,Subscriber> readFile(File file);
+	public Map<Long, Subscriber> readFile(String filename) throws IOException, FileNotFoundException {
 		File f = new File(filename);
 		// Check for common things
 		if(!f.isFile()) {
@@ -30,8 +30,8 @@ public abstract class ImportFile {
 		return readFile(f);
 	}
 	
-	public abstract void writeFile(List<Subscriber> subscribers, File file);
-	public void writeFile(List<Subscriber> subscribers, String filename) throws IOException, FileNotFoundException {
+	public abstract void writeFile(Map<Long, Subscriber> subscribers, File file);
+	public void writeFile(Map<Long,Subscriber> subscribers, String filename) throws IOException, FileNotFoundException {
 		File f = new File(filename);
 		if(!f.exists()) {
 			boolean b = f.createNewFile();
@@ -39,7 +39,6 @@ public abstract class ImportFile {
 				throw new IOException("Can't write to file: " + filename);
 			}
 		}
-		System.out.println("Writing subscribers to " + filename);
 		writeFile(subscribers, f);
 	}
 }

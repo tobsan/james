@@ -6,17 +6,14 @@ package org.spionen.james;
  */
 public class GetFile {
     
-    // The base folder path for the Current system users home folder. 
     public static final String libraryPath = System.getenv("HOME");
+    // This should be set by the user instead
+    public static final String jamesLibraryPath = libraryPath + "/Documents/James/";
+    public static final String jamesRoot = jamesLibraryPath; // for now
 
-        // The path where James puts all files he needs to save between missions.
-    public static final String jamesLibraryPath = libraryPath + "/Documents/James/"; 
-
-    // Where James put things he's asked to deliver. Like Export lists and stuff.
-    public static final String jamesExportPath = jamesLibraryPath + "/From James with Love/"; 
-    
-    // Where you put address files you want James to read and import.
-    public static final String jamesImportPath = jamesLibraryPath + "/To James/";
+    // Files that james has to import and export are placed in directories with suitable names
+    public static final String jamesExportPath = jamesLibraryPath + "/export/"; 
+    public static final String jamesImportPath = jamesLibraryPath + "/import/";
     
     // Where you put the list of subscribers VTD cannot find. 
     // TODO Integrate this with the "To James" folder.

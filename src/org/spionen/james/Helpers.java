@@ -146,16 +146,6 @@ public class Helpers {
 		}
 	}
 
-	// TODO Write Doc for checkIfStringIsNumeric
-	public static boolean checkIfStringIsNumeric(String theString) {
-		try {
-			Double.parseDouble(theString);
-			return true;
-		} catch (NumberFormatException nfe) {
-			return false;
-		}
-	}
-
 	/**
 	 * Misc functions concerning handling of MasterFiles
 	 */
@@ -168,23 +158,6 @@ public class Helpers {
 	public static MasterFile latestFileInList(ArrayList<MasterFile> masterList) {
 		Collections.sort(masterList, Collections.reverseOrder());
 		return masterList.get(0);
-	}
-
-	public static ArrayList<MasterFile> makeArrayListFromPath(String path) {
-		File folder = new File(path);
-		File[] listOfFiles = folder.listFiles();
-		ArrayList<MasterFile> masterFiles = new ArrayList<MasterFile>();
-
-		for (int i = 0; i < listOfFiles.length; i++) {
-			if (listOfFiles[i].isFile()) {
-				String fileName = listOfFiles[i].getName();
-				if (fileName.endsWith("_Master.txt")) {
-					MasterFile mf = new MasterFile(listOfFiles[i].getName());
-					masterFiles.add(mf);
-				}
-			}
-		}
-		return masterFiles;
 	}
 
 	public static ArrayList<File> makeArrayListOfFiles(String inFolder, String byFilter) {
@@ -224,20 +197,12 @@ public class Helpers {
 	}
 
 	public static String latestIssueYear() {
-		String path = GetFile.libraryPath;
-		ArrayList<MasterFile> masterFiles = Helpers.makeArrayListFromPath(path);
-		MasterFile latest = Helpers.latestFileInList(masterFiles);
-
-		return latest.getYear() + "";
+		return "2014"; // TODO
 	}
 
 	public static String latestIssueNumber() {
-		String path = GetFile.libraryPath;
-		ArrayList<MasterFile> masterFiles = Helpers.makeArrayListFromPath(path);
-		MasterFile latest = Helpers.latestFileInList(masterFiles);
-
-		return latest.getIssue() + "";
-}
+		return "1"; // TODO
+	}
 
 	public static int latestIssueYearInt() {
 		return Integer.parseInt(latestIssueYear());

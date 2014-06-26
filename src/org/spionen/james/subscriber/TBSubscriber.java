@@ -12,9 +12,8 @@ public class TBSubscriber extends SubscriberDecorator {
 	
 	public String toString() {
         int pn = Integer.parseInt(getZipCode());
-        Long prenNr = Long.parseLong(getAbNr());
         
-        String out1 = String.format("%7s%010d%05d%-20s%09d", "L ",prenNr,pn,getCity(),0);
+        String out1 = String.format("%7s%010d%05d%-20s%09d", "L ",getAbNr(),pn,getCity(),0);
         String out2 = streetFormat();
         String out3 = String.format("%1s%14s%-30s%-30s%-60s%06d", "","", getLastName() + " " + getFirstName(), getCoAddress(), "", 1);
         

@@ -12,13 +12,9 @@ import java.util.ArrayList;
 import javax.swing.*;
 
 import org.spionen.james.subscriber.Subscriber;
+import org.spionen.james.subscriber.Subscriber.Distributor;
 
-public class VTD_NoFind
-{
-
-//    private static String masterFilePath = James.masterFilePath;
-//    private static String notForVTDFilePath = James.notForVTDFilePath;
-    private static String vtdRejectsPath = GetFile.jamesVTDRejectsPath;
+public class VTD_NoFind {
     private static String filterPath = GetFile.jamesFilterPath;
 
     public static void noFind(int year, int issue) throws FileNotFoundException, IOException {
@@ -37,47 +33,26 @@ public class VTD_NoFind
         System.out.println("NotVTD...: " + notForVTD.size() + " poster.");
 
         // Set up filter (Bring)
-        File bring  = new File(filterPath + "Bring.txt");
-        ArrayList<String> filterBring   = new ArrayList<String>();
-        filterBring = Filter.createFilterArray(bring);
+        Filter filterBring = new Filter(Distributor.Bring, filterPath + "Bring.txt");
         
-        //
-        String abNr = JOptionPane.showInputDialog(null,
-                "Skriv in prenumerationsnummer på den som \nVTD ej hittar.");
-
-        if (abNr.length() <= 10 && !(abNr.length() < 4)) {
-
-            JOptionPane.showMessageDialog(null,
-                    "Du har anggivit prenumerationsnummer: " + abNr);
+        long abNr = Long.parseLong(JOptionPane.showInputDialog(null,
+                "Skriv in prenumerationsnummer på den som \nVTD ej hittar."));
+        
+        // if(abNr.length() <= 10 && !(abNr.length() < 4)) {
+        if(abNr <= 9999999999L && !(abNr < 1000)) {
+            JOptionPane.showMessageDialog(null,"Du har anggivit prenumerationsnummer: " + abNr);
 
             int index = ListHelpers.searchListForAbNr(master, abNr);
-
-            if (index >= 0) {
+            if(index >= 0) {
 
                 Subscriber p = master.get(index);
-                String postNr = p.getZipCode();
-
-                JOptionPane.showMessageDialog(null, "Prenumerant: "
-                            + p.getFullName());
+                JOptionPane.showMessageDialog(null, "Prenumerant: " + p.getFullName());
 
                 System.out.println(p.toString());
                 
-                if (Filter.checkIfInRange(postNr, filterBring)) {
-                    p.setDistributor("B");
-                } else {
-                    p.setDistributor("P");
+                if(!filterBring.apply(p)) {
+                	p.setDistributor(Distributor.Posten);
                 }
-                
-// TODO Remove old code after funtion noFind() is tested with new code. 
-//                if (p.isBring()) {
-//
-//                    p.setDistributor("B");
-//
-//                } else {
-//
-//                    p.setDistributor("P");
-//
-//                }
 
                 p.setNote("VTD kan ej hantera/hitta adressen.");
 
@@ -113,31 +88,28 @@ public class VTD_NoFind
         ListHelpers.stateSaveListAsFile(notForVTD, notForVTDFilePath);
     }
     
+    
+    
     public static void registerFromList(int year, int issue) throws IOException {
-        
+        /*
         String masterFilePath = GetFile.currentMaster(year, issue);
         String notForVTDFilePath = GetFile.notForVTDFilePath;
 
-        String rejectsFilePath = vtdRejectsPath + "VTD-Rejects.txt";
+        String rejectsFilePath = GetFile.jamesVTDRejectsPath + "VTD-Rejects.txt";
   
         // Set up filter (Bring)
-        File bring  = new File(filterPath + "Bring.txt");
-        ArrayList<String> filterBring   = new ArrayList<String>();
-        filterBring = Filter.createFilterArray(bring);
+        Filter filterBring = new Filter(Distributor.Bring, filterPath + "Bring.txt");
         
         // Kolla om källfilen finns
         if (Helpers.checkIfFileExists(rejectsFilePath)) {
-        
             File source = new File(rejectsFilePath); 
             ArrayList<String> vtdMissar = new ArrayList<String>();
-            
             ListHelpers.copyRows(source, vtdMissar);
-            
             if (Helpers.checkIfStringIsNumeric(vtdMissar.get(0))) {
 
-                JOptionPane.showMessageDialog(null, "Jag börjar kolla igenom listan. Den innehåller " + vtdMissar.size() + " rader s� ha lite t�lamod.");
+                JOptionPane.showMessageDialog(null, "Jag börjar kolla igenom listan. Den innehåller " + vtdMissar.size() + " rader så ha lite tålamod.");
                 
-                // �ppna referensfilerna.
+                // Öppna referensfilerna.
                 ArrayList<Subscriber> master       = new ArrayList<Subscriber>();
                 ArrayList<Subscriber> notForVTD    = new ArrayList<Subscriber>();
 
@@ -151,33 +123,16 @@ public class VTD_NoFind
                 int found       = 0;
                 int notFound    = 0;
                 
-                for (int i = 0; i < vtdMissar.size(); i++) {
-                
-                    String abNr = vtdMissar.get(i);
+                for(int i = 0; i < vtdMissar.size(); i++) {
+                    long abNr = Long.parseLong(vtdMissar.get(i));
                     int index = ListHelpers.searchListForAbNr(master, abNr);
-                    
                     if (index >= 0) {
                         found++; 
                         Subscriber p = master.get(index);
-                        String postNr = p.getZipCode();
-
-                        if (Filter.checkIfInRange(postNr, filterBring)) {
-                            p.setDistributor("B");
-                        } else {
-                            p.setDistributor("P");
+                        if(!filterBring.apply(p) ) {
+                        	p.setDistributor(Distributor.Posten);
                         }
                         
-// TODO Remove old code after funtion registerFromList() is tested with new code.                         
-//                        if (p.isBring()) {
-//
-//                            p.setDistributor("B");
-//
-//                        } else {
-//
-//                            p.setDistributor("P");
-//
-//                        }
-
                         p.setNote("VTD kan ej hantera/hitta adressen.");
                         index = ListHelpers.searchListForAbNr(notForVTD, abNr);
                         if (index >= 0) {
@@ -220,43 +175,34 @@ public class VTD_NoFind
                     + "Jag skapar en folder med filen så vi kan lösa detta smidigt.");
             
             // Skapa folder
-            Helpers.makeSureFolderExists(vtdRejectsPath);
+            Helpers.makeSureFolderExists(GetFile.jamesVTDRejectsPath);
             
             // Skapa målfil med instruktioner i sig.
             PrintWriter targetFile = new PrintWriter(new BufferedWriter
                                       (new FileWriter(rejectsFilePath)));
             
             String message = "Hej! \n\n"
-                    + "Listen carefully 'cause I'm only gonna say this once.\n\n"
-                    + "F�r att skapa en lista �ver de prenumeranter som VTD inte hittade s� g�r du helt enkelt s� att du �ppnar deras Excel-dokument och kopierar kolumnen med prenumerantnummer. Bara den."
-                    + " Klistra sedan in den i detta dokumentet. Klistra �ver denna text. Jag vill inte ha n�got annat �n siffror i hela dokumentet n�r du �r f�rdig. S� se �ven till att ta bort eventuell rubrik fr�n kolumnen. "
-                    + " Annars kommer jag bli ledsen och vr�ka ur mig n�got konstigt felmeddelande och kanske crasha. Lite pinsamt... men s� �r det."
-                    + "\n\n"
-                    + "N�r allt �r inklistrat sparar du filen och trycker p� \"Reg. VTD misslista\"-knappen igen."
-                    + " N�r jag �r f�rdig med att registrera adresserna som VTD missade s� hojtar jag till. "
-                    + " Det borde inte ta mer �n n�gon sekund."
-                    + "\n\n"
-                    + "Hej s� l�nge!\n"
-                    + "///James"; 
+                + "Listen carefully 'cause I'm only gonna say this once.\n\n"
+                + "För att skapa en lista över de prenumeranter som VTD inte hittade så gör du helt enkelt så att du öppnar deras Excel-dokument och kopierar kolumnen med prenumerantnummer. Bara den."
+                + " Klistra sedan in den i detta dokumentet. Klistra över denna text. Jag vill inte ha något annat än siffror i hela dokumentet när du är färdig. Så se även till att ta bort eventuell rubrik från kolumnen. "
+                + " Annars kommer jag bli ledsen och vräka ur mig något konstigt felmeddelande och kanske crasha. Lite pinsamt... men sä är det."
+                + "\n\n"
+                + "När allt är inklistrat sparar du filen och trycker på \"Reg. VTD misslista\"-knappen igen."
+                + " När jag är färdig med att registrera adresserna som VTD missade så hojtar jag till. "
+                + " Det borde inte ta mer än någon sekund."
+                + "\n\n"
+                + "Hej så länge!\n"
+                + "///James"; 
             
             targetFile.print(message);
             targetFile.close();  
             JOptionPane.showMessageDialog(null, "Fixat!\n"
-                    + "Nu finns foldern (VTD Rejects) p� ditt skrivbord.\n"
+                    + "Nu finns foldern (VTD Rejects) på ditt skrivbord.\n"
                     + "I foldern hittar du en fil (VTD-Rejects.txt).\n"
-                    + "�ppna filen och l�s instruktionerna. Noga.\n\n"
-                    + "N�r du �r klar kan du klicka p� knappen\n"
-                    + "s� f�rs�ker vi igen."); 
+                    + "Qppna filen och läs instruktionerna. Noga.\n\n"
+                    + "När du är klar kan du klicka på knappen\n"
+                    + "så försöker vi igen."); 
         }
-        
-        // Om K�llfilen finns s� skall den l�sas in
-            
-            // N�r f�rdig Dialog - Registrering av adresser VTD inte kan 
-            // leverera till �r f�rdig. + Statistik. 
-            
-        // Om k�llfilen inte finns s� skall den skapas. 
-           
-            // N�r f�rdig Dialog - V�nligen kopiera in listan i K�llfilen. 
-    
+        */
     }
 }

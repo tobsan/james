@@ -4,16 +4,17 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Map;
 
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
 import org.spionen.james.MasterFile.State;
-import org.spionen.james.importing.Importer;
+import org.spionen.james.jamesfile.JamesFile;
+import org.spionen.james.jamesfile.JamesFileFactory;
 import org.spionen.james.subscriber.Subscriber;
+import org.spionen.james.subscriber.Subscriber.Distributor;
 
 /**
  * This is the controller class for James
@@ -24,26 +25,19 @@ public class James {
     
 	private JamesFrame jf;
 	private boolean guitest = true;
-	
 	private MasterFile master;
-	private List<Subscriber> vtdSubscribers;
-	private List<Subscriber> tbSubscribers;
-	private List<Subscriber> bringSubscribers;
-	private List<Subscriber> postenSubscribers;
+	private Map<Long,Subscriber> noThanks;
 	
 	public James() {
-		
 		// Create the view
 		jf = new JamesFrame();
 		addListeners(jf);
 		jf.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		jf.setVisible(true);
 		
-		// Initialise lists, but when should they be populated?
-		vtdSubscribers = new ArrayList<Subscriber>();
-		tbSubscribers = new ArrayList<Subscriber>();
-		bringSubscribers = new ArrayList<Subscriber>();
-		postenSubscribers = new ArrayList<Subscriber>();
+		// Initialize data structures
+		master = null;
+		noThanks = null;
 	}
 	
 	/**
@@ -100,16 +94,13 @@ public class James {
 
 						// Load filter for VTD
 						jfc.setFileSelectionMode(JFileChooser.FILES_ONLY);
-						result = jfc.showDialog(jf, "Load VTD filter");
+						result = jfc.showDialog(jf, "Load declines file");
 						if(result == JFileChooser.APPROVE_OPTION) {
-							List<Subscriber> subs = master.runFilter(jfc.getSelectedFile().getAbsolutePath());
-							vtdSubscribers.addAll(subs);
-						}
-						
-						if(!guitest) { 
-							int year = master.getYear();
-							int issue = master.getIssue();
-							Importer.importAll(year, issue);
+							String path = jfc.getSelectedFile().getAbsolutePath();
+							JamesFile imp = JamesFileFactory.createImportFile(path);
+							noThanks = imp.readFile(path);
+							System.out.println("Declines: " + noThanks.size());
+							master.removeDeclines(noThanks);
 						}
 						
 						// Update internal state
@@ -132,12 +123,13 @@ public class James {
 			public void actionPerformed(ActionEvent e) {
 				// We have to have gone further than initialisation to use this feature
 				if(jf.isLocked() && master.getState() != State.Init) {
-					   int vtd      = vtdSubscribers.size();
-					   int tb       = tbSubscribers.size();
-					   int bring    = bringSubscribers.size();
-					   int posten   = postenSubscribers.size();
-					   int no       = 0; // TODO
+					   int vtd      = master.exportByDistributor(Distributor.VTD).size();
+					   int tb       = 0;
+					   int bring    = 0;
+					   int posten   = 0;
+					   int no       = noThanks == null ? 0 : noThanks.size();
 					   int special  = 0; // TODO 
+					   
 
 					   JOptionPane.showMessageDialog(null,
 							   "Statistik enligt nedan:\n"
