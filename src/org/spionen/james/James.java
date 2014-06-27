@@ -25,19 +25,36 @@ public class James {
     
 	private JamesFrame jf;
 	private boolean guitest = true;
-	private MasterFile master;
-	private Map<Long,Subscriber> noThanks;
+	private MasterFile master; // For the current issue
+	private Settings settings;
 	
-	public James() {
+	// These are independent on what issue we are working on
+	private Map<Long,Subscriber> noThanks;
+	private Map<Long,Subscriber> vtdBom;
+	private Filter vtdFilter;
+	private Filter tbFilter;
+	private Filter bringFilter;
+	
+	public James(Settings settings) {
+		this.settings = settings;
+		
+		// Initialize data structures
+		master = null;
+		noThanks = null;
+		try {
+			vtdFilter = this.settings.createFilter(Distributor.VTD);
+			tbFilter = this.settings.createFilter(Distributor.TB);
+			bringFilter = this.settings.createFilter(Distributor.Bring);
+		} catch(Exception e) {
+			JOptionPane.showMessageDialog(null, "Error when creating filters! \n\n" + e.getMessage());
+			System.exit(-1); // Error
+		}
+		
 		// Create the view
 		jf = new JamesFrame();
 		addListeners(jf);
 		jf.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		jf.setVisible(true);
-		
-		// Initialize data structures
-		master = null;
-		noThanks = null;
 	}
 	
 	/**
@@ -81,34 +98,26 @@ public class James {
 				// Only if we have a master and it has not yet been initialized
 				// may we initialize it.
 				if(jf.isLocked() && master.getState() == State.Init) {
-					try {
-						JFileChooser jfc = new JFileChooser();
-						jfc.setMultiSelectionEnabled(false);
-						jfc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-						// Load address base directory
-						int result = jfc.showDialog(jf, "Load directory");
-						if(result == JFileChooser.APPROVE_OPTION) {
-							File f = jfc.getSelectedFile().getAbsoluteFile();
-							master.importAll(f);
-						}
-
-						// Load filter for VTD
-						jfc.setFileSelectionMode(JFileChooser.FILES_ONLY);
-						result = jfc.showDialog(jf, "Load declines file");
-						if(result == JFileChooser.APPROVE_OPTION) {
-							String path = jfc.getSelectedFile().getAbsolutePath();
-							JamesFile imp = JamesFileFactory.createImportFile(path);
-							noThanks = imp.readFile(path);
-							System.out.println("Declines: " + noThanks.size());
-							master.removeDeclines(noThanks);
-						}
+					JFileChooser jfc = new JFileChooser();
+					jfc.setMultiSelectionEnabled(false);
+					jfc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+					// Load address base directory
+					int result = jfc.showDialog(jf, "Load directory");
+					if(result == JFileChooser.APPROVE_OPTION) {
+						File f = jfc.getSelectedFile().getAbsoluteFile();
+						master.importAll(f);
+						
+						// TODO: Remove noThanks
+						
+						// Apply filters
+						master.runFilter(vtdFilter);
+						master.runFilter(tbFilter);
+						master.runFilter(bringFilter);
 						
 						// Update internal state
 						master.nextState();
 						jf.enableDistribution();
 						jf.enableStatistics();
-					} catch(IOException ioe) {
-						ioe.printStackTrace();
 					}
 				} else {
 					System.out.println("Not yet initialized!");

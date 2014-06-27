@@ -19,6 +19,9 @@ import org.supercsv.prefs.CsvPreference;
  * A class representing a filter for zip codes for a distributor, so
  * that any papers within such a zip code is distributed by them. 
  * 
+ * Filter files are csv files that should conform to this format:
+ * "zipCodeFrom;zipCodeTo" or "zipCode"
+ * 
  * @author Maxim Fris
  * @author Tobias Olausson 
  */
@@ -31,7 +34,7 @@ public class Filter {
 	private String filepath;
 	
 	// Create this filter
-	public Filter(Distributor dist, String filepath) {
+	public Filter(Distributor dist, String filepath) throws IOException, NumberFormatException {
 		this.dist = dist;
 		this.filepath = filepath;
 		this.pref = CsvPreference.EXCEL_NORTH_EUROPE_PREFERENCE;
@@ -41,16 +44,17 @@ public class Filter {
 	}
 	
 	/**
-	 * Reads the filter file and populate the set
+	 * Reads the filter file and populate the set. 
+	 * @return true if the file exists and was read without errors, false otherwise
 	 */
-	private void readFile() {
+	private void readFile() throws IOException, NumberFormatException {
 		File file = new File(filepath);
 		if(file.isFile() && file.exists()) {
-			try {
-				Reader r = new InputStreamReader(new FileInputStream(file), encoding);
-				CsvListReader reader = new CsvListReader(r, pref);
-				List<String> row;
-				while((row = reader.read()) != null) {
+			Reader r = new InputStreamReader(new FileInputStream(file), encoding);
+			CsvListReader reader = new CsvListReader(r, pref);
+			List<String> row;
+			while((row = reader.read()) != null) {
+				try {
 					// A single number
 					if(row.size() == 1) {
 						Integer i = Integer.parseInt(row.get(0));
@@ -65,11 +69,14 @@ public class Filter {
 					} else {
 						// Malformed entry, discard
 					}
+				} catch(NumberFormatException ne) {
+					reader.close();
+					throw new NumberFormatException("zipCode is not a number: " + ne.getMessage());
 				}
-				reader.close();
-			} catch(IOException | NumberFormatException e) {
-				// TODO: Well, this is a bummer
 			}
+			reader.close();
+		} else {
+			throw new IOException("File is not a file, and/or does not exist");
 		}
 	}
 	
@@ -92,7 +99,7 @@ public class Filter {
 	public boolean apply(Subscriber s) {
 		try {
 			int zip = Integer.parseInt(s.getZipCode());
-			if(zipCodes.contains(zip)) {
+			if(zipCodes.contains(zip) && s.getDistributor() != Distributor.NoThanks) {
 				s.setDistributor(dist);
 				return true;
 			}

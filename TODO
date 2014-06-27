@@ -1,7 +1,9 @@
 * Decide on what the standard encoding should be (depends on suppliers of data)
+  Perhaps we can guess on a per-file basis?
 * Make the descriptions presented in the GUI more modular, not hard coded.
-* Get some things into a sqlite db, like filters
-* There is no real reason for the list of subscribers to be a List. It would
-  make a lot more sense for it to be a Map from SubscriberID to Subscribers
+* Get some things into a sqlite db, like filters and reference files
+  Create a new branch of the project when it is time to do this.
 * Make a clear distinction between what data is global and what data is
   dependent on each issue. Most stuff, such as filters etc are still global.
+* Merge "create issue" and "create address base". It is completely unreasonable
+  to create an empty issue object without creating an address base.
