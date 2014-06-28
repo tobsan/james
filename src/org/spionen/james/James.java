@@ -11,8 +11,6 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
 import org.spionen.james.MasterFile.State;
-import org.spionen.james.jamesfile.JamesFile;
-import org.spionen.james.jamesfile.JamesFileFactory;
 import org.spionen.james.subscriber.Subscriber;
 import org.spionen.james.subscriber.Subscriber.Distributor;
 
@@ -79,9 +77,30 @@ public class James {
 			public void actionPerformed(ActionEvent e) {
 				int year = jf.getYear();
 				int issue = jf.getIssue();
-				jf.lockIssue();
-				jf.enableImport();
 				master = new MasterFile(year, issue);
+				
+				// And load directory with addresses
+				JFileChooser jfc = new JFileChooser();
+				jfc.setMultiSelectionEnabled(false);
+				jfc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+				// Load address base directory
+				int result = jfc.showDialog(jf, "Load directory");
+				if(result == JFileChooser.APPROVE_OPTION) {
+					File f = jfc.getSelectedFile().getAbsoluteFile();
+					master.importAll(f);
+					
+					// TODO: Remove noThanks
+					
+					// Apply filters
+					master.runFilter(vtdFilter);
+					master.runFilter(tbFilter);
+					master.runFilter(bringFilter);
+					
+					// Update internal state
+					master.nextState();
+					jf.enableDistribution();
+					jf.enableStatistics();
+				}
 			}
 		});
 		
@@ -92,46 +111,11 @@ public class James {
 			}
 		});
 		
-		// Create new address base
-		jf.addAddressListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				// Only if we have a master and it has not yet been initialized
-				// may we initialize it.
-				if(jf.isLocked() && master.getState() == State.Init) {
-					JFileChooser jfc = new JFileChooser();
-					jfc.setMultiSelectionEnabled(false);
-					jfc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-					// Load address base directory
-					int result = jfc.showDialog(jf, "Load directory");
-					if(result == JFileChooser.APPROVE_OPTION) {
-						File f = jfc.getSelectedFile().getAbsoluteFile();
-						master.importAll(f);
-						
-						// TODO: Remove noThanks
-						
-						// Apply filters
-						master.runFilter(vtdFilter);
-						master.runFilter(tbFilter);
-						master.runFilter(bringFilter);
-						
-						// Update internal state
-						master.nextState();
-						jf.enableDistribution();
-						jf.enableStatistics();
-					}
-				} else {
-					System.out.println("Not yet initialized!");
-					// State info about having to create a new issue
-					// to use this function
-				}
-			}
-		});
-		
 		// Show statistics
 		jf.addStatisticsListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				// We have to have gone further than initialisation to use this feature
-				if(jf.isLocked() && master.getState() != State.Init) {
+				if(master.getState() != State.Init) {
 					   int vtd      = master.exportByDistributor(Distributor.VTD).size();
 					   int tb       = 0;
 					   int bring    = 0;

@@ -47,9 +47,6 @@ public class JamesFrame extends JFrame {
 	private JTextField issueNumberField;
 	private JButton createIssueButton;
 	private JButton getIssueButton;
-	// Import
-	private JPanel importPanel;
-	private JButton addressBaseButton;
 	// Statistik
 	private JPanel statsPanel;
 	private JButton statsButton;
@@ -145,11 +142,6 @@ public class JamesFrame extends JFrame {
 		c.gridx = 2;
 		issuePanel.add(getIssueButton, c);
 		c.gridwidth = 1;
-		// The import panel
-		importPanel = new JPanel();
-		importPanel.setBorder(BorderFactory.createTitledBorder("Import"));
-		addressBaseButton = new JButton("Skapa ny adressbas");
-		importPanel.add(addressBaseButton);
 		// The statistics panel
 		statsPanel = new JPanel();
 		statsPanel.setBorder(BorderFactory.createTitledBorder("Statistik"));
@@ -224,12 +216,10 @@ public class JamesFrame extends JFrame {
 		mainPanel.add(issuePanel, c);
 		c.gridx = 1;
 		c.gridy = 0;
-		mainPanel.add(importPanel,c);
-		c.gridx = 2;
+		c.gridwidth = 2;
 		mainPanel.add(statsPanel,c);
 		c.gridx = 1;
 		c.gridy = 1;
-		c.gridwidth = 2;
 		mainPanel.add(exportPanel,c);
 		c.gridy = 2;
 		mainPanel.add(registryPanel,c);
@@ -266,7 +256,6 @@ public class JamesFrame extends JFrame {
 	 */
 	public void disableAll() {
 		unlockIssue();
-		addressBaseButton.setEnabled(false);
 		bringOnlyButton.setEnabled(false);
 		bringSpecialButton.setEnabled(false);
 		exportVTDButton.setEnabled(false);
@@ -277,10 +266,6 @@ public class JamesFrame extends JFrame {
 		removeButton.setEnabled(false);
 		statsButton.setEnabled(false);
 		vtdMissButton.setEnabled(false);
-	}
-	
-	public void enableImport() {
-		addressBaseButton.setEnabled(true);
 	}
 	
 	public void enableStatistics() {
@@ -325,10 +310,6 @@ public class JamesFrame extends JFrame {
 		getIssueButton.addActionListener(al);
 	}
 	
-	public void addAddressListener(ActionListener al) {
-		addressBaseButton.addActionListener(al);
-	}
-	
 	public void addStatisticsListener(ActionListener al) {
 		statsButton.addActionListener(al);
 	}
@@ -370,7 +351,7 @@ public class JamesFrame extends JFrame {
 	}
 	
 	/**
-	 * A view class to represent the settings dialog
+	 * A view class to represent the settings/preferences dialog
 	 * TODO: How to communicate result of this dialog back?
 	 * 
 	 * @author Tobias Olausson

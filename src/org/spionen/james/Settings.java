@@ -3,7 +3,7 @@ package org.spionen.james;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
-
+import javax.swing.JFileChooser;
 import org.spionen.james.subscriber.Subscriber.Distributor;
 
 public class Settings implements Serializable {
@@ -21,15 +21,25 @@ public class Settings implements Serializable {
 	private String ftpPass;
 	private String ftpChannel;
 	
-	// TODO: Decide on using Object or CSV/XML here
-	public Settings() throws IOException {
+	public static Settings loadOrCreate() throws IOException {
 		// Check for settings file and try to load
 		File home = new File(System.getenv("HOME"));
 		File jamesSettings = new File(home.getPath() + File.pathSeparator + settingsFile);
 		if(jamesSettings.exists() && jamesSettings.isFile()) {
-			// Read settings object from file, or something
+			return null;
+			// Read settings from the file
 		} else {
 			// Prompt for values and create settings file
+			JFileChooser jfc = new JFileChooser();
+			jfc.setMultiSelectionEnabled(false);
+			jfc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+			// Load address base directory
+			int result = jfc.showDialog(null, "Select James directory");
+			if(result == JFileChooser.APPROVE_OPTION) {
+				return new Settings(jfc.getSelectedFile().getPath(), null, null, null, null);
+			} else {
+				return null;
+			}
 		}
 	}
 	
@@ -37,8 +47,8 @@ public class Settings implements Serializable {
 					String ftpPass, String ftpChannel) throws IOException {
 		
 		this.basePath = new File(basePath);
-		this.filterPath = new File(basePath + File.pathSeparator + "filter");
-		this.referencePath = new File(basePath + File.pathSeparator + "reference");
+		this.filterPath = new File(basePath + File.separator + "filter");
+		this.referencePath = new File(basePath + File.separator + "reference");
 		checkPaths();
 		
 		this.ftpHost = ftpHost;
@@ -49,6 +59,7 @@ public class Settings implements Serializable {
 		
 	}
 	
+	// TODO: Check so that the paths are in fact directories and not files
 	private boolean checkPaths() throws IOException {
 		if(!basePath.exists() && !basePath.mkdirs()) {
 			throw new IOException("Could not create non-existing base path: " + basePath.getPath());
@@ -62,17 +73,29 @@ public class Settings implements Serializable {
 	}
 	
 	public TBConnection createTBConnection() {
-		return new TBConnection(ftpHost, ftpUser, ftpPass, ftpChannel);
+		if(ftpHost != null && ftpUser != null && ftpPass != null && ftpChannel != null) {
+			return new TBConnection(ftpHost, ftpUser, ftpPass, ftpChannel);
+		} else {
+			//TODO: Prompt for these values
+			return null;
+		}
 	}
 	
 	/**
 	 * Creates a filter, given a Distributor from file:
 	 * basePath / filter / Distributor.txt
 	 * 
+	 * If the file does not exist, create it and load an empty filter.
+	 * 
 	 * @param d the distributor for which to create the filter
 	 * @return
 	 */
 	public Filter createFilter(Distributor d) throws IOException, NumberFormatException {
-		return new Filter(d, filterPath.getPath() + File.pathSeparator + d.toString() + ".txt");
+		String filterFile = filterPath.getPath() + File.separator + d.toString() + ".txt";
+		File filterFileFile = new File(filterFile);
+		if(!filterFileFile.exists() && !filterFileFile.createNewFile()) {
+			throw new IOException("Filter file missing, and could not create empty filter file");
+		}
+		return new Filter(d, filterFile);
 	}
 }

@@ -76,7 +76,7 @@ public class Filter {
 			}
 			reader.close();
 		} else {
-			throw new IOException("File is not a file, and/or does not exist");
+			throw new IOException("File is not a file, and/or does not exist: " + filepath);
 		}
 	}
 	
