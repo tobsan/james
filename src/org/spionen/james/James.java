@@ -69,7 +69,19 @@ public class James {
 		
 		jf.addPreferencesListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				JOptionPane.showMessageDialog(jf, "Preferences");
+				final SettingsFrame sf = new SettingsFrame();
+				sf.addCancelListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						sf.setVisible(false);
+						sf.dispose();
+					}
+				});
+				sf.addSaveListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						// Settings s = sf.getValues();
+					}
+				});
+				sf.setVisible(true);
 			}
 		});
 		

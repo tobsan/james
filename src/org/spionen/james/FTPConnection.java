@@ -12,14 +12,14 @@ import org.apache.commons.net.ftp.FTPClient;
  * @author Tobias Olausson
  *
  */
-public class TBConnection {
+public class FTPConnection {
 	private String hostname = "ftp.tidningsbararna.se"; // Standard URL
 	private String username;
 	private String password;
 	private FTPClient client;
 	private String channel;
 	
-	public TBConnection(String hostname, String username, String password, String channel) {
+	public FTPConnection(String hostname, String username, String password, String channel) {
 		this.hostname = hostname;
 		this.username = username;
 		this.password = password;
@@ -27,7 +27,7 @@ public class TBConnection {
 		client = new FTPClient();
 	}
 	
-	public TBConnection(String username, String password, String channel) {
+	public FTPConnection(String username, String password, String channel) {
 		this.username = username;
 		this.password = password;
 		this.channel = channel;

@@ -72,9 +72,9 @@ public class Settings implements Serializable {
 		}
 	}
 	
-	public TBConnection createTBConnection() {
+	public FTPConnection createTBConnection() {
 		if(ftpHost != null && ftpUser != null && ftpPass != null && ftpChannel != null) {
-			return new TBConnection(ftpHost, ftpUser, ftpPass, ftpChannel);
+			return new FTPConnection(ftpHost, ftpUser, ftpPass, ftpChannel);
 		} else {
 			//TODO: Prompt for these values
 			return null;

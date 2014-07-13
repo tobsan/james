@@ -2,10 +2,12 @@ package org.spionen.james;
 
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.event.ActionListener;
 import java.util.Calendar;
 
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -348,25 +350,5 @@ public class JamesFrame extends JFrame {
 	
 	public void addRemoveListener(ActionListener al) {
 		removeButton.addActionListener(al);
-	}
-	
-	/**
-	 * A view class to represent the settings/preferences dialog
-	 * TODO: How to communicate result of this dialog back?
-	 * 
-	 * @author Tobias Olausson
-	 *
-	 */
-	private class SettingsFrame extends JFrame {
-		
-		public SettingsFrame() {
-			super();
-			this.initComponents();
-		}
-		
-		// Initialize components
-		private void initComponents() {
-			
-		}
 	}
 }
