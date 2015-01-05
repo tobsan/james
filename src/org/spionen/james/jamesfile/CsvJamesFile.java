@@ -1,8 +1,6 @@
 package org.spionen.james.jamesfile;
 
-import org.spionen.james.FieldType;
 import org.spionen.james.subscriber.Subscriber;
-import org.spionen.james.subscriber.VTDSubscriber;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -78,8 +76,9 @@ public class CsvJamesFile extends JamesFile {
 				}
 				subscribers.put(sub.getAbNr(), sub);
 			}
-
+			
 			reader.close();
+			r.close();
 			return subscribers;
 		} catch(IOException e) {
 			return null;
@@ -111,27 +110,7 @@ public class CsvJamesFile extends JamesFile {
 			
 		} catch(IOException e) {
 			//TODO: Do something here?
-		}
-	}
-	
-	// Simple testing code
-	public static void main(String[] args) {
-		String input = "/home/marvin/workspace/doktorandtest.csv";
-		String output = "/home/marvin/workspace/doktorander.csv";
-		CsvJamesFile c = new CsvJamesFile();
-		try {
-			Map<Long,Subscriber> subs1 = c.readFile(input);
-			c.writeFile(subs1, output);
-			for(long abNr : subs1.keySet()) {
-				VTDSubscriber vs = new VTDSubscriber(subs1.get(abNr));
-				System.out.println(vs.toString());
-			}
-			Map<Long,Subscriber> subs2 = c.readFile(output);
-			
-			// Check so that the two maps contain the same elements
-			
-		} catch(IOException e) {
-			// DO Nothing
+			e.printStackTrace();
 		}
 	}
 

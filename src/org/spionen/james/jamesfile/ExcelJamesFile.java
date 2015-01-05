@@ -1,21 +1,20 @@
 package org.spionen.james.jamesfile;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
-import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.spionen.james.FieldType;
 import org.spionen.james.subscriber.Subscriber;
-import org.spionen.james.subscriber.VTDSubscriber;
 
 public class ExcelJamesFile extends JamesFile {
 	
@@ -123,43 +122,6 @@ public class ExcelJamesFile extends JamesFile {
 		} catch (IOException e) {
 			// TODO: Handle this...
 			e.printStackTrace();
-		}
-	}
-
-	// "Testing" code
-	public static void main(String[] args) throws FileNotFoundException, IOException {
-		String input = "/home/gargravarr/James/Registerfiler/Register Spionen nr 3 2013/Register Spionen (kopia).xls";
-		String output = "/home/gargravarr/James/Registerfiler/Register Spionen nr 3 2013/test.xls";
-		System.out.println("Importing from excel: " + input);
-		ExcelJamesFile im = new ExcelJamesFile();
-		Map<Long,Subscriber> ps1 = im.readFile(input);
-		System.out.println("Exporting to excel: " + output);
-		im.writeFile(ps1, output);
-		System.out.println("Importing from excel: " + input);
-		Map<Long,Subscriber> ps2 = im.readFile(output);
-		boolean mismatch = false;		
-		// Check that everything in ps2 is also in ps1
-		for(long abNr : ps2.keySet()) {
-			Subscriber s1 = ps1.get(abNr);
-			Subscriber s2 = ps2.get(abNr);
-			if(!s1.equals(s2)) {
-				mismatch = true;
-			}
-		}
-		
-		// Check that everything in ps1 is also in ps2
-		for(long abNr : ps1.keySet()) {
-			Subscriber s1 = ps1.get(abNr);
-			Subscriber s2 = ps2.get(abNr);
-			if(!s1.equals(s2)) {
-				mismatch = true;
-			}
-		}
-		
-		if(mismatch) {
-			System.out.println("The contents of the two files does not match");
-		} else {
-			System.out.println("100% content match");
 		}
 	}
 }

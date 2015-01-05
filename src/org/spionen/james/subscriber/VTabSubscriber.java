@@ -11,7 +11,8 @@ public class VTabSubscriber extends SubscriberDecorator {
 	 */
     public String toString() {
         String name = (getLastName() + " " + getFirstName()).trim();
-        return getAbNr() + ";" + name + ";" + getCoAddress() + ";" 
+        String coAddr = getCoAddress() == null ? "" : getCoAddress();
+        return getAbNr() + ";" + name + ";" + coAddr + ";" 
          	 + getStreetAddress() + ";" + getZipCode() + ";" + getCity();
     }
 }

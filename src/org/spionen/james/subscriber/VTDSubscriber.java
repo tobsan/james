@@ -13,7 +13,11 @@ public class VTDSubscriber extends SubscriberDecorator {
 	
     public String toString() {
         String name = (getLastName() + " " + getFirstName()).trim();
-        return getAbNr() + ";" + name + ";" + getCoAddress() + ";" + 
+        String coAddr = getCoAddress();
+        if(coAddr == null || coAddr.equalsIgnoreCase("null")) {
+        	coAddr = "";
+        }
+        return getAbNr() + ";" + name + ";" + coAddr + ";" + 
         	   getStreetAddress() + ";" + getZipCode() + ";" + getCity();
     }
 }

@@ -2,12 +2,11 @@ package org.spionen.james;
 
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseListener;
 import java.util.Calendar;
 
-import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -31,16 +30,22 @@ public class JamesFrame extends JFrame {
 	private static final long serialVersionUID = -5877293779273173169L;
 	private JPanel mainPanel;
 	
+	// Menus
 	private JMenuBar menubar;
-	private JMenu settingsMenu;
-	private JMenuItem tbSettings;
+	private JMenu mainMenu;
+	private JMenuItem menuExit;
 	private JMenuItem preferences;
+	private JMenu specialMenu;
+	private JMenuItem loadNoThanks;
+	private JMenuItem removeData;
+	private JMenuItem removeDB;
 	
 	// James logotype
 	private JPanel logoPanel;
 	private JLabel logoLabel;
 	private JLabel titleLabel;
 	private JLabel taglineLabel;
+	
 	// Aktuellt nummer
 	private JPanel issuePanel;
 	private JLabel issueYear;
@@ -49,20 +54,24 @@ public class JamesFrame extends JFrame {
 	private JTextField issueNumberField;
 	private JButton createIssueButton;
 	private JButton getIssueButton;
+	
 	// Statistik
 	private JPanel statsPanel;
 	private JButton statsButton;
+	
 	//Export
 	private JPanel exportPanel;
 	private JPanel vtdPanel;
 	private JButton exportVTDButton;
 	private JButton exportTBButton;
+	private JButton uploadTBButton;
 	private JPanel vtabPanel;
 	private JButton komplettButton;
 	private JButton bringOnlyButton;
 	private JButton bringSpecialButton;
 	private JButton postenOnlyButton;
-	// Registerunderhåll
+	
+	// Registry stuff
 	private JPanel registryPanel;
 	private JButton nonVTDButton;
 	private JButton vtdMissButton;
@@ -72,6 +81,7 @@ public class JamesFrame extends JFrame {
 		super();
 		initComponents();
 		disableAll();
+		setLocationRelativeTo(null);
 	}
 	
 	/**
@@ -80,12 +90,23 @@ public class JamesFrame extends JFrame {
 	private void initComponents() {
 		// First, the menus
 		menubar = new JMenuBar();
-		settingsMenu = new JMenu("Settings");
-		tbSettings = new JMenuItem("TB/FTP Settings");
+		mainMenu = new JMenu("Menu");
 		preferences = new JMenuItem("Preferences");
-		settingsMenu.add(tbSettings);
-		settingsMenu.add(preferences);
-		menubar.add(settingsMenu);
+		menuExit = new JMenuItem("Exit");
+		mainMenu.add(preferences);
+		mainMenu.add(menuExit);
+		specialMenu = new JMenu("Special");
+		loadNoThanks = new JMenuItem("Load NoThanks-list");
+		removeData = new JMenuItem("Remove all Issues and Subscribers from DB");
+		removeDB = new JMenuItem("Delete the Database");
+		specialMenu.add(loadNoThanks);
+		specialMenu.addSeparator();
+		specialMenu.add(removeData);
+		specialMenu.add(removeDB);
+		
+		menubar.add(mainMenu);
+		menubar.add(specialMenu);
+		
 		this.setJMenuBar(menubar);
 		
 		// Then, all panels
@@ -98,7 +119,7 @@ public class JamesFrame extends JFrame {
 		logoPanel = new JPanel();
 		logoPanel.setLayout(new GridBagLayout());
 		// TODO: Better path
-		logoLabel = new JLabel(new ImageIcon("/home/gargravarr/workspace/james/src/org/spionen/james/resources/JamesMD.png"));
+		logoLabel = new JLabel(new ImageIcon("resources/JamesMD.png"));
 		titleLabel = new JLabel("James");
 		float titleSize = 25;
 		titleLabel.setFont(titleLabel.getFont().deriveFont(titleSize));
@@ -118,16 +139,20 @@ public class JamesFrame extends JFrame {
 		issuePanel = new JPanel();
 		issuePanel.setLayout(new GridBagLayout());
 		issuePanel.setBorder(BorderFactory.createTitledBorder("Aktuellt Nummer"));
-		issueYear = new JLabel ("År (YYYY)");
-		String year = String.valueOf(Calendar.getInstance().get(Calendar.YEAR));
-		issueYearField = new JTextField(year);
+		issueYear = new JLabel ("Year (YYYY)");
+		int year = Calendar.getInstance().get(Calendar.YEAR);
+		int month = Calendar.getInstance().get(Calendar.MONTH);
+		year = month == Calendar.DECEMBER ? year++ : year;
+		issueYearField = new JTextField(String.valueOf(year));
 		issueYearField.setHorizontalAlignment(JTextField.CENTER);
-		issueNumber = new JLabel ("Nummer (N)");
-		// TODO: Calculate a reasonable suggestion for issue number.
-		issueNumberField = new JTextField("1");
+		issueNumber = new JLabel ("Issue (N)");
+		
+		// Summer months suggests issue number 5. Autumn = Month-2
+		month = month > 4 && month < 8 ? 5 : month < 5 ? month+1 : month == Calendar.DECEMBER ? 1 : month-2;
+		issueNumberField = new JTextField(String.valueOf(month));
 		issueNumberField.setHorizontalAlignment(JTextField.CENTER);
-		createIssueButton = new JButton("Skapa nummer");
-		getIssueButton = new JButton("Hämta nummer");
+		createIssueButton = new JButton("Create issue");
+		getIssueButton = new JButton("Load issue");
 		c.gridx = 0;
 		c.gridy = 0;
 		issuePanel.add(issueYear, c);
@@ -146,8 +171,8 @@ public class JamesFrame extends JFrame {
 		c.gridwidth = 1;
 		// The statistics panel
 		statsPanel = new JPanel();
-		statsPanel.setBorder(BorderFactory.createTitledBorder("Statistik"));
-		statsButton = new JButton("Se statistik");
+		statsPanel.setBorder(BorderFactory.createTitledBorder("Statistics"));
+		statsButton = new JButton("View statistics");
 		statsPanel.add(statsButton);
 		// The export panel
 		exportPanel = new JPanel();
@@ -157,22 +182,25 @@ public class JamesFrame extends JFrame {
 		vtdPanel = new JPanel();
 		vtdPanel.setBorder(BorderFactory.createTitledBorder("Distribution"));
 		vtdPanel.setLayout(new GridBagLayout());
-		exportVTDButton = new JButton("Export till VTD");
-		exportTBButton = new JButton("Export till TB");
+		exportVTDButton = new JButton("Export to VTD");
+		exportTBButton = new JButton("Export to TB");
+		uploadTBButton = new JButton("Upload to TB");
 		c.gridx = 0;
 		c.gridy = 0;
 		vtdPanel.add(exportVTDButton, c);
 		c.gridy = 1;
 		vtdPanel.add(exportTBButton, c);
+		c.gridy = 2;
+		vtdPanel.add(uploadTBButton, c);
 		c.gridheight = 1;
 		// The V-TAB panel
 		vtabPanel = new JPanel();
-		vtabPanel.setBorder(BorderFactory.createTitledBorder("Tryck"));
+		vtabPanel.setBorder(BorderFactory.createTitledBorder("Printing"));
 		vtabPanel.setLayout(new GridBagLayout());
-		komplettButton = new JButton("Komplett");
-		bringOnlyButton = new JButton("Bara Bring");
+		komplettButton = new JButton("Complete");
+		bringOnlyButton = new JButton("Only Bring");
 		bringSpecialButton = new JButton("Bring + Special");
-		postenOnlyButton = new JButton("Bara Posten");
+		postenOnlyButton = new JButton("Only Posten");
 		c.gridx = 0;
 		c.gridy = 0;
 		vtabPanel.add(komplettButton, c);
@@ -190,11 +218,11 @@ public class JamesFrame extends JFrame {
 		exportPanel.add(vtabPanel, c);
 		// The panel for registry maintenance
 		registryPanel = new JPanel();
-		registryPanel.setBorder(BorderFactory.createTitledBorder("Registerunderhåll"));
+		registryPanel.setBorder(BorderFactory.createTitledBorder("Registry maintenance"));
 		registryPanel.setLayout(new GridBagLayout());
-		nonVTDButton = new JButton("Reg. ej funnen VTD-adress");
-		vtdMissButton = new JButton("Reg. VTD misslista");
-		removeButton = new JButton("Ta bort prenumerant");
+		nonVTDButton = new JButton("Register address as non-VTD");
+		vtdMissButton = new JButton("Register VTD miss-list");
+		removeButton = new JButton("Remove subscriber");
 		c.gridx = 0;
 		c.gridy = 0;
 		registryPanel.add(nonVTDButton, c);
@@ -242,15 +270,15 @@ public class JamesFrame extends JFrame {
 	public void lockIssue() {
 		issueNumberField.setEnabled(false);
 		issueYearField.setEnabled(false);
-	}
-	
-	public boolean isLocked() {
-		return !issueNumberField.isEnabled() && !issueYearField.isEnabled();
+		createIssueButton.setEnabled(false);
+		getIssueButton.setEnabled(false);
 	}
 	
 	public void unlockIssue() {
 		issueNumberField.setEnabled(true);
 		issueYearField.setEnabled(true);
+		createIssueButton.setEnabled(true);
+		getIssueButton.setEnabled(true);
 	}
 	
 	/**
@@ -262,46 +290,50 @@ public class JamesFrame extends JFrame {
 		bringSpecialButton.setEnabled(false);
 		exportVTDButton.setEnabled(false);
 		exportTBButton.setEnabled(false);
+		uploadTBButton.setEnabled(false);
 		komplettButton.setEnabled(false);
-		nonVTDButton.setEnabled(false);
 		postenOnlyButton.setEnabled(false);
-		removeButton.setEnabled(false);
 		statsButton.setEnabled(false);
-		vtdMissButton.setEnabled(false);
 	}
 	
-	public void enableStatistics() {
-		statsButton.setEnabled(true);
-	}
-	
-	public void enableDistribution() {
-		exportVTDButton.setEnabled(true);
-		exportTBButton.setEnabled(true);
-	}
-	
-	public void enableVTab() {
+	public void enableAll() {
+		lockIssue();
 		bringOnlyButton.setEnabled(true);
 		bringSpecialButton.setEnabled(true);
+		exportVTDButton.setEnabled(true);
+		exportTBButton.setEnabled(true);
+		// uploadTBButton.setEnabled(true);
 		komplettButton.setEnabled(true);
 		postenOnlyButton.setEnabled(true);
-	}
-	
-	public void enableRegistryMaint() {
-		nonVTDButton.setEnabled(true);
-		vtdMissButton.setEnabled(true);
-		removeButton.setEnabled(true);
+		statsButton.setEnabled(true);
 	}
 	
 	/*
 	 * Only listeners below
 	 */
 	
-	public void addTBSettingsListener(ActionListener al) {
-		tbSettings.addActionListener(al);
+	public void addJamesLogoListener(MouseListener ml) {
+		logoLabel.addMouseListener(ml);
 	}
 	
 	public void addPreferencesListener(ActionListener al) {
 		preferences.addActionListener(al);
+	}
+	
+	public void addMenuExitListener(ActionListener al) {
+		menuExit.addActionListener(al);
+	}
+	
+	public void addReadNoThanksListener(ActionListener al) {
+		loadNoThanks.addActionListener(al);
+	}
+	
+	public void addRemoveDataListener(ActionListener al) {
+		removeData.addActionListener(al);
+	}
+	
+	public void addRemoveDBListener(ActionListener al) {
+		removeDB.addActionListener(al);
 	}
 	
 	public void addCreateIssueListener(ActionListener al) {

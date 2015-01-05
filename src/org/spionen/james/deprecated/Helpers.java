@@ -1,4 +1,4 @@
-package org.spionen.james;
+package org.spionen.james.deprecated;
 
 /**
  *
@@ -11,7 +11,7 @@ import java.io.*;
 import java.util.*;
 import java.text.*;
 
-import org.spionen.james.subscriber.Subscriber;
+import org.spionen.james.MasterFile;
 
 public class Helpers {
 	// Metod för att rensa personnummer
@@ -83,17 +83,6 @@ public class Helpers {
 
 	public static int numberOfFieldsInRow(String row, String delimiter) {
 		return row.split(delimiter).length;
-		/*
-		int numberOfFields = 0;
-		for (int i = 0; i < row.length(); i++) {
-			Character c = row.charAt(i);
-			Character d = delimiter.charAt(0);
-			if(c.compareTo(d) == 0) {
-				numberOfFields++;
-			}
-		}
-		return numberOfFields;
-		*/
 	}
 
 	/**
@@ -125,9 +114,9 @@ public class Helpers {
 	public static void logStatusMessage(String message) {
 
 		System.out.println("\n========================================"
-				         + "========================================\n" + message + "\n"
-				         + "========================================"
-				         + "========================================\n");
+				           + "========================================\n" + message + "\n"
+				           + "========================================"
+				           + "========================================\n");
 	}
 
 	/**
@@ -176,40 +165,9 @@ public class Helpers {
 		return filesArray;
 	}
 
-	public static String previousIssue(int year, int issue) {
-		int piYear;
-		int piNumber;
-
-		// Check if same year.
-		if (issue == 1) {
-			piYear = year - 1;
-			piNumber = 8;
-		} else {
-			piYear = year;
-			piNumber = issue - 1;
-		}
-		return piYear + "-" + piNumber;
-	}
-
 	public static String todaysYear() {
 		DateFormat nuSE = new SimpleDateFormat("yyyy");
 		return nuSE.format(new Date());
-	}
-
-	public static String latestIssueYear() {
-		return "2014"; // TODO
-	}
-
-	public static String latestIssueNumber() {
-		return "1"; // TODO
-	}
-
-	public static int latestIssueYearInt() {
-		return Integer.parseInt(latestIssueYear());
-	}
-
-	public static int latestIssueNumberInt() {
-		return Integer.parseInt(latestIssueNumber());
 	}
 
 }

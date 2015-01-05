@@ -1,9 +1,12 @@
 * Decide on what the standard encoding should be (depends on suppliers of data)
   Perhaps we can guess on a per-file basis?
 * Make the descriptions presented in the GUI more modular, not hard coded.
-* Get some things into a sqlite db, like filters and reference files
-  Create a new branch of the project when it is time to do this.
-* Make a clear distinction between what data is global and what data is
-  dependent on each issue. Most stuff, such as filters etc are still global.
-* Merge "create issue" and "create address base". It is completely unreasonable
-  to create an empty issue object without creating an address base.
+* Get a clear definition of what data is mandatory per subscriber. Is city needed?
+  From the old code it seems the zipCode is the only important part
+* How should we handle the VIP list? Perhaps a special table that is always
+  inserted into DistributedTo? Currently VIP has a SubscriberID of < 10000.
+* Who gets the paper delivered by Posten? It seems from the current code
+  that it is only VIPs, which seems reasonable given the high cost and the
+  otherwise high number of subscribers that would get it by Posten. Although
+  the VTAB export for posten only does not check for VIPs.
+* Should NoThanks trump VIP? I think so... 

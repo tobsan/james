@@ -1,6 +1,6 @@
 package org.spionen.james.subscriber;
 
-import org.spionen.james.FieldType;
+import org.spionen.james.jamesfile.FieldType;
 
 /**
  * Decorator class for Subscribers. Primary use is to implement various

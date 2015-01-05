@@ -1,4 +1,4 @@
-package org.spionen.james;
+package org.spionen.james.deprecated;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -17,7 +17,6 @@ import javax.swing.JOptionPane;
 
 import org.spionen.james.subscriber.Subscriber;
 import org.spionen.james.subscriber.TBSubscriber;
-import org.spionen.james.subscriber.VTDSubscriber;
 import org.spionen.james.subscriber.VTabSubscriber;
 
 /**

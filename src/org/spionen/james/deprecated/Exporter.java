@@ -1,4 +1,4 @@
-package org.spionen.james;
+package org.spionen.james.deprecated;
 
 import java.io.*;
 import java.util.*;
@@ -8,14 +8,18 @@ import org.spionen.james.subscriber.Subscriber;
 import org.spionen.james.subscriber.Subscriber.Distributor;
 
 /**
- * This class is only here for reference nowadays.
+ * This class is only here for reference nowadays. Most of it is commented out
+ * because the classes that were used have been changed or removed. Use only
+ * for reference on what James is supposed to do. 
+ * 
  * @author Maxim
+ * @author Tobias (minor changes)
  *
  */
 public class Exporter {
 
-    private static String exportFolder = GetFile.jamesExportPath;
-    private static String filterPath = GetFile.jamesFilterPath;
+    private static String exportFolder = null; // GetFile.jamesExportPath;
+    private static String filterPath = null; // GetFile.jamesFilterPath;
     
     /**
      * This method does two things:
@@ -36,14 +40,16 @@ public class Exporter {
      */
     public static void prepareMasterForExport(int year, int issue) throws FileNotFoundException, IOException {
 
-        String masterFilePath = GetFile.currentMaster(year, issue);
-        String notForVTDFilePath = GetFile.notForVTDFilePath;
+        String masterFilePath = null; // GetFile.currentMaster(year, issue);
+        String notForVTDFilePath = null; // GetFile.notForVTDFilePath;
         
+        /*
         // Filters
         Helpers.logStatusMessage("Activating Filters.");
         Filter filterVTD = new Filter(Distributor.VTD, filterPath + "VTD.txt");
         Filter filterTB = new Filter(Distributor.TB, filterPath + "TB.txt");
-        Filter filterBring = new Filter(Distributor.Bring, filterPath + "Bring.txt");
+        Filter filterBring = new Filter(Distributor.BRING, filterPath + "Bring.txt");
+        */
         
         // Log status
         Helpers.logStatusMessage("Preparing Master for Export - Started.");
@@ -67,8 +73,9 @@ public class Exporter {
         // First, check all subscribers against the available filters
         for(Subscriber s : master) {
             int postNr = Integer.parseInt(s.getZipCode());
-
-            if(s.getDistributor() != Distributor.NoThanks) {
+            
+            /*
+            if(s.getDistributor() != Distributor.NONE) {
                 if (s.isOKforPaperRoute()) {
                 	if(filterVTD.matches(postNr)) {
                 		s.setDistributor(Distributor.VTD);
@@ -77,22 +84,23 @@ public class Exporter {
                         s.setDistributor(Distributor.TB);
                         t++;
                     } else if(filterBring.matches(postNr)) {
-                            s.setDistributor(Distributor.Bring);
+                            s.setDistributor(Distributor.BRING);
                             b++;
                     } else {
-                        s.setDistributor(Distributor.Posten);
+                        s.setDistributor(Distributor.POSTEN);
                         p++;
                     }
                 } else if(filterBring.matches(postNr)) {
-                        s.setDistributor(Distributor.Bring);
+                        s.setDistributor(Distributor.BRING);
                         b++;
                 } else {
-                    s.setDistributor(Distributor.Posten);
+                    s.setDistributor(Distributor.POSTEN);
                     p++;
                 }
             } else {
                 n++;
             }
+            */
         }
 
         // TODO Fixa så Not For VTD filtreras efter nya filtren.
@@ -108,20 +116,22 @@ public class Exporter {
                 s = master.get(index);
                 int postNr = Integer.parseInt(s.getZipCode());
 
-                if (s.getDistributor() != Distributor.NoThanks) {
+                /*
+                if (s.getDistributor() != Distributor.NONE) {
                     if(filterBring.matches(postNr)) {
-                        s.setDistributor(Distributor.Bring);
+                        s.setDistributor(Distributor.BRING);
                         s.setNote("VTD-No-GO");
                         v--;
                         b++;
                     } else {
-                        s.setDistributor(Distributor.Posten);
+                        s.setDistributor(Distributor.POSTEN);
                         s.setNote("VTD-No-GO");
                         v--;
                         p++;
                     }
                     nv++;
                 }
+                */
            }
        }
 
@@ -191,7 +201,7 @@ public class Exporter {
 
     public static void exportToVTD(int year, int issue, String distributionsdatum) throws FileNotFoundException, IOException {
 
-        String masterFilePath = GetFile.currentMaster(year, issue);
+        String masterFilePath = null; // GetFile.currentMaster(year, issue);
         
         Helpers.logStatusMessage("exportToVTD Called");
         
@@ -206,7 +216,7 @@ public class Exporter {
         ArrayList<Subscriber> vtdStopp       = new ArrayList<Subscriber>();
 
         ListHelpers.readFromFileToList(masterFilePath, master);
-        ListHelpers.readFromFileToList(GetFile.previousMaster(year, issue), prevMaster);
+        // ListHelpers.readFromFileToList(GetFile.previousMaster(year, issue), prevMaster);
 
         // Clear non VTD entrys from both arrays.
 
@@ -287,7 +297,7 @@ public class Exporter {
 
     public static void exportToTB(int year, int issue, String distributionsdatum) throws FileNotFoundException, IOException {
 
-        String masterFilePath = GetFile.currentMaster(year, issue);
+        String masterFilePath = null; // GetFile.currentMaster(year, issue);
         Helpers.logStatusMessage("exportToTB Called");
         
         //Check if Exportfolder-exists and create it if it doesen't
@@ -301,7 +311,7 @@ public class Exporter {
 
         ListHelpers.readFromFileToList(masterFilePath, master);
 //        ListHelpers.readFromFileToList(previousIssueMasterFilePath, prevMaster);
-        ListHelpers.readFromFileToList(GetFile.previousMaster(year, issue), prevMaster);
+        // ListHelpers.readFromFileToList(GetFile.previousMaster(year, issue), prevMaster);
         // Clear non TB entrys from both arrays.
 
         int i = 0; //counter
@@ -383,7 +393,7 @@ public class Exporter {
     
     
     public static void exportToVTAB_Complete(int year, int issue) throws FileNotFoundException, IOException {
-        String masterFilePath = GetFile.currentMaster(year, issue);
+        String masterFilePath = null; // GetFile.currentMaster(year, issue);
         
         //Check if Exportfolder-exists and create it if it doesen't
         Helpers.makeSureFolderExists(exportFolder);
@@ -396,18 +406,18 @@ public class Exporter {
         int p = 0; //Posten Counter
         for (int i = 0;  i < master.size(); i++) {
             Distributor filter = master.get(i).getDistributor();
-                if (filter == Distributor.Bring) {
+                if (filter == Distributor.BRING) {
                     export.add(master.get(i));
                     b++;
                 }
-                if (filter == Distributor.Posten) {
+                if (filter == Distributor.POSTEN) {
                     export.add(master.get(i));
                     p++;
                 }
         }
 
         //Save Export List
-        String targetFilePath =  GetFile.vTabExportFile(year, issue, "Komplett");
+        String targetFilePath = null; // GetFile.vTabExportFile(year, issue, "Komplett");
         ListHelpers.exportListForVTAB(export, targetFilePath);
 
         //Log
@@ -424,7 +434,7 @@ public class Exporter {
     }
 
     public static void exportToVTAB_JustBring(int year, int issue) throws FileNotFoundException, IOException {
-        String masterFilePath = GetFile.currentMaster(year, issue);
+        String masterFilePath = null; // GetFile.currentMaster(year, issue);
 
         //Check if Exportfolder-exists and create it if it doesen't
         Helpers.makeSureFolderExists(exportFolder);
@@ -436,14 +446,14 @@ public class Exporter {
         int b = 0; //Bring Counter
         for (int i = 0;  i < master.size(); i++) {
             Distributor filter = master.get(i).getDistributor();
-                if (filter == Distributor.Bring) {
+                if (filter == Distributor.BRING) {
                     export.add(master.get(i));
                     b++;
                 }
         }
 
         //Save Export List
-        String targetFilePath =  GetFile.vTabExportFile(year, issue, "Bring");
+        String targetFilePath = null; // GetFile.vTabExportFile(year, issue, "Bring");
         ListHelpers.exportListForVTAB(export, targetFilePath);
 
         //Log
@@ -459,7 +469,7 @@ public class Exporter {
     }
 
     public static void exportToVTAB_JustPosten(int year, int issue) throws FileNotFoundException, IOException {
-        String masterFilePath = GetFile.currentMaster(year, issue);        
+        String masterFilePath = null; // GetFile.currentMaster(year, issue);        
  
         //Check if Exportfolder-exists and create it if it doesen't
         Helpers.makeSureFolderExists(exportFolder);
@@ -471,14 +481,14 @@ public class Exporter {
         int p = 0; //Posten Counter
         for (int i = 0;  i < master.size(); i++) {
             Distributor filter = master.get(i).getDistributor();
-            if (filter == Distributor.Posten) {
+            if (filter == Distributor.POSTEN) {
                 export.add(master.get(i));
                 p++;
             }
         }
 
         //Save Export List
-        String targetFilePath =  GetFile.vTabExportFile(year, issue, "Posten");
+        String targetFilePath = null; // GetFile.vTabExportFile(year, issue, "Posten");
         ListHelpers.exportListForVTAB(export, targetFilePath);
 
         //Log
@@ -494,7 +504,7 @@ public class Exporter {
 
     public static void exportToVTAB_BringAndSpecials(int year, int issue) throws FileNotFoundException, IOException {
 
-        String masterFilePath = GetFile.currentMaster(year, issue);
+        String masterFilePath = null; // GetFile.currentMaster(year, issue);
         //Check if Exportfolder-exists and create it if it doesen't
         Helpers.makeSureFolderExists(exportFolder);
  
@@ -508,10 +518,10 @@ public class Exporter {
 
         for (int i = 0;  i < master.size(); i++) {
             Distributor dist = master.get(i).getDistributor();
-            if(dist == Distributor.Bring) {
+            if(dist == Distributor.BRING) {
                 export.add(master.get(i));
                 b++;
-            } else if(dist == Distributor.Posten) {
+            } else if(dist == Distributor.POSTEN) {
                 if (master.get(i).getAbNr() <= 99999) { // Length <= 5
                     export.add(master.get(i));
                     p++;
@@ -520,7 +530,7 @@ public class Exporter {
         }
 
         //Save Export List
-        String targetFilePath = GetFile.vTabExportFile(year, issue, "Special");
+        String targetFilePath = null; // GetFile.vTabExportFile(year, issue, "Special");
         ListHelpers.exportListForVTAB(export, targetFilePath);
 
         //Log

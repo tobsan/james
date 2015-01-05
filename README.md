@@ -8,6 +8,11 @@ Götheborgske Spionen is a newspaper that is distributed to all students and emp
 Dependencies
 ============
 James depends on third party software to function properly. The following are used:
-* Apache POI (>= 3.9)
+* Apache POI (>= 3.10.1)
 * SuperCSV (>= 2.2.0)
 * Apache Commons Net (>= 3.3)
+
+Licensing
+=========
+James is licensed under GPLv3, see LICENSE. All three third party software packages
+mentioned above are licensed under the Apache License v2.0.

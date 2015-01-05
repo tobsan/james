@@ -1,6 +1,9 @@
 package org.spionen.james.subscriber;
 
-import org.spionen.james.FieldType;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+import org.spionen.james.jamesfile.FieldType;
 
 public class Subscriber implements Comparable<Subscriber> {
     
@@ -16,12 +19,34 @@ public class Subscriber implements Comparable<Subscriber> {
     private String type;
     private String note;
     
+    public static Subscriber getFromDB(ResultSet rs) throws SQLException {
+    	Subscriber s = new Subscriber();
+		s.setAbNr(rs.getLong("SubscriberID"));
+		s.setFirstName(rs.getString("FirstName"));
+		s.setLastName(rs.getString("LastName"));
+		s.setCoAddress(rs.getString("CoAddress"));
+		s.setStreetAddress(rs.getString("Address"));
+		s.setZipCode(rs.getString("ZipCode"));
+		s.setCity(rs.getString("City"));
+		s.setCountry(rs.getString("Country"));
+		s.setNote(rs.getString("Note"));
+		return s;
+    }
+    
     public Subscriber() {
     	abNr = 0; 
     	firstName = lastName = "";
     	coAddress = streetAddress = zipCode = "";
     	city = country = type = note = "";
     	distributor = null;
+    }
+    
+    private String cleanString(String data) {
+    	if(data != null) {
+    		return data.replaceAll("\n|\r", "");
+    	} else {
+    		return null;
+    	}
     }
 
     public long getAbNr() {
@@ -37,7 +62,7 @@ public class Subscriber implements Comparable<Subscriber> {
 	}
 
 	public void setFirstName(String firstName) {
-		this.firstName = firstName;
+		this.firstName = cleanString(firstName);
 	}
 
 	public String getLastName() {
@@ -45,7 +70,7 @@ public class Subscriber implements Comparable<Subscriber> {
 	}
 
 	public void setLastName(String lastName) {
-		this.lastName = lastName;
+		this.lastName = cleanString(lastName);
 	}
 	
 	public String getFullName() {
@@ -57,7 +82,7 @@ public class Subscriber implements Comparable<Subscriber> {
 	}
 
 	public void setCoAddress(String coAddress) {
-		this.coAddress = coAddress;
+		this.coAddress = cleanString(coAddress);
 	}
 
 	public String getStreetAddress() {
@@ -65,7 +90,7 @@ public class Subscriber implements Comparable<Subscriber> {
 	}
 
 	public void setStreetAddress(String streetAddress) {
-		this.streetAddress = streetAddress;
+		this.streetAddress = cleanString(streetAddress);
 	}
 
 	public String getZipCode() {
@@ -83,7 +108,7 @@ public class Subscriber implements Comparable<Subscriber> {
 	}
 
 	public void setCity(String city) {
-		this.city = city;
+		this.city = cleanString(city);
 	}
 
 	public String getCountry() {
@@ -91,7 +116,7 @@ public class Subscriber implements Comparable<Subscriber> {
 	}
 
 	public void setCountry(String country) {
-		this.country = country;
+		this.country = cleanString(country);
 	}
 
 	public Distributor getDistributor() {
@@ -170,7 +195,7 @@ public class Subscriber implements Comparable<Subscriber> {
 	}
 
 	public void setNote(String note) {
-		this.note = note;
+		this.note = cleanString(note);
 	}
 
 	/**
@@ -203,6 +228,9 @@ public class Subscriber implements Comparable<Subscriber> {
                 return true;
             } else if (country.equals("SVERIGE") || country.equals("SWEDEN")) {
                 return true;
+            } else if (streetAddress.length() == 0) {
+            	note = "Adress saknas";
+            	return false;
             } else {
                 note = "Icke Svensk adress";
                 return false;
@@ -268,10 +296,10 @@ public class Subscriber implements Comparable<Subscriber> {
     }
 
     public enum Distributor {
-    	VTD,TB,Bring,Posten,Duplicate,Invalid,NoThanks;
+    	VTD,TB,BRING,POSTEN,INVALID,NONE;
     }
     
     public enum Type {
-    	Student, PhDStudent, Politician, Other
+    	Student, PhDStudent, Staff, Politician, Other
     }
 }

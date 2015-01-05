@@ -1,4 +1,4 @@
-package org.spionen.james;
+package org.spionen.james.jamesfile;
 
 public enum FieldType {
 

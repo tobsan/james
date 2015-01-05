@@ -1,10 +1,7 @@
 package org.spionen.james.subscriber;
 
 public class TBSubscriber extends SubscriberDecorator {
-	
-	/*
-	 *  TODO: Turn into a decorator instead?
-	 */
+
 	public TBSubscriber(Subscriber s) {
 		super(s);
 		setDistributor(Distributor.TB);
@@ -21,6 +18,7 @@ public class TBSubscriber extends SubscriberDecorator {
 	}
 	
 	private String streetFormat() {
+		   // Formatting rules as follows:
 		   // -----------------------------------*****------****-----*----------
 	       // CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCNNNNNCCCCCCCCCCNNNNNCNNNNNNNNNN
 	       
