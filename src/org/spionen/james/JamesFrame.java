@@ -118,8 +118,7 @@ public class JamesFrame extends JFrame {
 		// The "James" panel
 		logoPanel = new JPanel();
 		logoPanel.setLayout(new GridBagLayout());
-		// TODO: Better path
-		logoLabel = new JLabel(new ImageIcon("resources/JamesMD.png"));
+		logoLabel = new JLabel(new ImageIcon(getClass().getResource("/org/spionen/james/resources/JamesMD.png")));
 		titleLabel = new JLabel("James");
 		float titleSize = 25;
 		titleLabel.setFont(titleLabel.getFont().deriveFont(titleSize));

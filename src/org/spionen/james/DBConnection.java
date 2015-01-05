@@ -2,8 +2,9 @@ package org.spionen.james;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.sql.*;
 
 public class DBConnection {
@@ -15,6 +16,12 @@ public class DBConnection {
 		DBConnection.dbfile = dbfile.getAbsolutePath();
 	}
 	
+	/**
+	 * TODO: Make sure the database is populated the first time the connection
+	 * 		 is needed.
+	 * @return
+	 * @throws SQLException
+	 */
 	public static Connection getConnection() throws SQLException {
 		try {
 			Class.forName("org.sqlite.JDBC");
@@ -29,29 +36,30 @@ public class DBConnection {
 	}
 	
 	public static boolean createDatabase() {
+		boolean success = false;
 		try {
 			Connection c = getConnection();
 			SQLScriptRunner sr = new SQLScriptRunner(c, false, true);
 			try {
-				sr.runScript(new FileReader(new File("resources/database_setup.sql")));
-				sr.runScript(new FileReader(new File("resources/setup_filters.sql")));
-				return true;
+				InputStream setupResource = DBConnection.class.getResourceAsStream("/org/spionen/james/resources/database_setup.sql");
+				InputStream filterResource = DBConnection.class.getResourceAsStream("/org/spionen/james/resources/setup_filters.sql");
+				sr.runScript(new InputStreamReader(setupResource));
+				sr.runScript(new InputStreamReader(filterResource));
+				success = true;
 			} catch(FileNotFoundException fnfe) {
 				System.out.println("Database setup files not found: " + fnfe.getMessage());
 				fnfe.printStackTrace();
-				return false;
 			} catch(IOException ioe) {
 				System.out.println("I/O error: " + ioe.getMessage());
 				ioe.printStackTrace();
-				return false;
 			}
 			
 		} catch(SQLException sqle) {
 			System.out.println("Database error: " + sqle.getMessage());
 			sqle.printStackTrace();
-			return false;
 		}
-
+		
+		return success;
 	}
 }
 	
