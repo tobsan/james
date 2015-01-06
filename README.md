@@ -32,6 +32,8 @@ James-dbstructure.dia for an Entity-Relation diagram of the database.
 As much as possible, the application adheres to the MVC model. Subscribers
 can be decorated, which is used to do string formatting.
 
+![Entity-Relation diagram for James](James-dbstructure.png)
+
 Licensing
 =========
 James is licensed under GPLv3, see LICENSE. All third party software packages
