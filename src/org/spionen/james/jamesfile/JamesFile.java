@@ -16,7 +16,7 @@ import org.spionen.james.subscriber.Subscriber;
  */
 public abstract class JamesFile {
 	
-	public abstract Map<Long,Subscriber> readFile(File file);
+	public abstract Map<Long,Subscriber> readFile(File file) throws IOException;
 	public Map<Long, Subscriber> readFile(String filename) throws IOException, FileNotFoundException {
 		File f = new File(filename);
 		// Check for common things
@@ -30,7 +30,7 @@ public abstract class JamesFile {
 		return readFile(f);
 	}
 	
-	public abstract void writeFile(Map<Long, Subscriber> subscribers, File file);
+	public abstract void writeFile(Map<Long, Subscriber> subscribers, File file) throws IOException;
 	public void writeFile(Map<Long,Subscriber> subscribers, String filename) throws IOException, FileNotFoundException {
 		File f = new File(filename);
 		if(!f.exists()) {

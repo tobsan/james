@@ -73,7 +73,7 @@ public class Settings implements Serializable {
 			throw new IOException("Database file can't be read and/or written: " + dbPath.getAbsolutePath());
 		}
 		
-		if(!dbPath.exists()) {
+		if(!dbPath.exists() || dbPath.length() == 0) {
 			JOptionPane.showMessageDialog(null, "Click OK to create database. This may take up to a minute");
 			DBConnection.setDBFile(dbPath);
 			DBConnection.createDatabase();

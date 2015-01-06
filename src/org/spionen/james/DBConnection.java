@@ -18,7 +18,7 @@ public class DBConnection {
 	
 	/**
 	 * TODO: Make sure the database is populated the first time the connection
-	 * 		 is needed.
+	 * 		 is needed, or run createDatabase() otherwise
 	 * @return
 	 * @throws SQLException
 	 */

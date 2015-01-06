@@ -54,64 +54,50 @@ public class CsvJamesFile extends JamesFile {
 	}
 	
 	@Override
-	public Map<Long, Subscriber> readFile(File file) {
-		try {
-			Map<Long, Subscriber> subscribers = new TreeMap<Long, Subscriber>();
-			Reader r = new InputStreamReader(new FileInputStream(file), encoding);
-			CsvListReader reader = new CsvListReader(r, pref);
-			
-			// Handle the header
-			String[] header = reader.getHeader(true);
-			FieldType[] order = new FieldType[header.length];
-			for(int i = 0; i < header.length; i++) {
-				order[i] = FieldType.getFieldType(header[i]);
-			}
-			
-			// Then iterate through the rest of the lines
-			List<String> row;
-			while((row = reader.read()) != null) {
-				Subscriber sub = new Subscriber();
-				for(int i = 0; i < row.size(); i++) {
-					sub.setByField(order[i], row.get(i));
-				}
-				subscribers.put(sub.getAbNr(), sub);
-			}
-			
-			reader.close();
-			r.close();
-			return subscribers;
-		} catch(IOException e) {
-			return null;
-			//TODO: Handle this in a better way
+	public Map<Long, Subscriber> readFile(File file) throws IOException {
+		Map<Long, Subscriber> subscribers = new TreeMap<Long, Subscriber>();
+		Reader r = new InputStreamReader(new FileInputStream(file), encoding);
+		CsvListReader reader = new CsvListReader(r, pref);
+		
+		// Handle the header
+		String[] header = reader.getHeader(true);
+		FieldType[] order = new FieldType[header.length];
+		for(int i = 0; i < header.length; i++) {
+			order[i] = FieldType.getFieldType(header[i]);
 		}
+		
+		// Then iterate through the rest of the lines
+		List<String> row;
+		while((row = reader.read()) != null) {
+			Subscriber sub = new Subscriber();
+			for(int i = 0; i < row.size(); i++) {
+				sub.setByField(order[i], row.get(i));
+			}
+			subscribers.put(sub.getAbNr(), sub);
+		}
+		
+		reader.close();
+		r.close();
+		return subscribers;
 	}
 
 	@Override
-	/**
-	 * TODO: Should the map be converted to a sorted list first, perhaps?
-	 */
-	public void writeFile(Map<Long,Subscriber> subscribers, File file) {
-		try {
-			Writer w = new PrintWriter(file, encoding);
-			CsvListWriter writer = new CsvListWriter(w, pref);
-			// First, write a header
-			List<FieldType> order = Arrays.asList(FieldType.standardOrder());
-			writer.write(order);
-			// And then the rest of the columns
-			for(long abNr : subscribers.keySet()) {
-				List<String> values = new ArrayList<String>();
-				Subscriber s = subscribers.get(abNr);
-				for(FieldType ft : order) {
-					values.add(s.getByField(ft));
-				}
-				writer.write(values);
+	public void writeFile(Map<Long,Subscriber> subscribers, File file) throws IOException {
+		Writer w = new PrintWriter(file, encoding);
+		CsvListWriter writer = new CsvListWriter(w, pref);
+		// First, write a header
+		List<FieldType> order = Arrays.asList(FieldType.standardOrder());
+		writer.write(order);
+		// And then the rest of the columns
+		for(long abNr : subscribers.keySet()) {
+			List<String> values = new ArrayList<String>();
+			Subscriber s = subscribers.get(abNr);
+			for(FieldType ft : order) {
+				values.add(s.getByField(ft));
 			}
-			writer.close();
-			
-		} catch(IOException e) {
-			//TODO: Do something here?
-			e.printStackTrace();
+			writer.write(values);
 		}
+		writer.close();
 	}
 
 }

@@ -3,10 +3,9 @@
 * Make the descriptions presented in the GUI more modular, not hard coded.
 * Get a clear definition of what data is mandatory per subscriber. Is city needed?
   From the old code it seems the zipCode is the only important part
-* How should we handle the VIP list? Perhaps a special table that is always
-  inserted into DistributedTo? Currently VIP has a SubscriberID of < 10000.
-* Who gets the paper delivered by Posten? It seems from the current code
-  that it is only VIPs, which seems reasonable given the high cost and the
-  otherwise high number of subscribers that would get it by Posten. Although
-  the VTAB export for posten only does not check for VIPs.
-* Should NoThanks trump VIP? I think so... 
+* Wrap all ActionListeners in a common class handling SQLExceptions (James.java)
+* Use geographic filtering for zipcodes. 40* <= zipcode <= 54* should be enough
+  to distribute to (all of Västra Götalands län). Of course, VIPs should be
+  exempt from this limit. An example implementation exists in MasterFile.java.
+* A nicer separation of functions beloning to a specific issue (MasterFile.java)
+  and those that are global to the program (DBConnection.java, perhaps?)

@@ -1,6 +1,7 @@
 package org.spionen.james;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -72,8 +73,11 @@ public class MasterFile implements Serializable {
 				subscribers.putAll(subs);
 				System.out.println("Total imported: " + totalNum + ", Master size: " + subscribers.size());
 			} catch(IllegalArgumentException e) {
-				// This is thrown if files that do not match extensions 
-				// are found in the directory, so it is not really a problem
+				// This is thrown by the JamesFileFactory if files that do not
+				// match extensions are found in the directory, so it is not 
+				// really a problem
+			} catch(IOException ioe) {
+				// If there was an error reading a file, or if a file was badly formatted.
 			}
 		}
 		System.out.println("ImportAll, total imported: " + totalNum + ", subscribers: " + subscribers.size());
@@ -328,6 +332,22 @@ public class MasterFile implements Serializable {
 			subs.add(new VTabSubscriber(s));
 		}
 		return subs;
+	}
+	
+	public void runGeographicalfilter() throws SQLException {
+		int minZip = 40;
+		int maxZip = 54;
+		Connection c = DBConnection.getConnection();
+		Statement st = c.createStatement();
+		// All non-VIPs that live outside minZip* through maxZip* zipCodes are filtered
+		// out of James. This is done for each issue.
+		String sql = "INSERT OR REPLACE INTO DistributedBy (SubscriberID, Distributor) "
+				   + "SELECT SubscriberID, 'NONE' FROM Subscribers NATURAL JOIN DistributedTo WHERE "
+				   + "IssueYear = " + year + " AND IssueNumber = " + issue + " AND "
+				   + "length(SubscriberID) < 6 AND "
+				   + "Substr(ZipCode,1,2) < '"+minZip+"' AND "
+				   + "Substr(ZipCode,1,2) > '"+maxZip+"'";
+		st.executeUpdate(sql);
 	}
 
     public int getYear() { return year; }

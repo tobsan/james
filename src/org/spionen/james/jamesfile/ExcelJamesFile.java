@@ -20,7 +20,7 @@ public class ExcelJamesFile extends JamesFile {
 	
 	public static final String[] excelExt = {".xls", ".xlsx"};
 	
-	public Map<Long,Subscriber> readFile(File file) { 
+	public Map<Long,Subscriber> readFile(File file) throws IOException { 
 		Map<Long,Subscriber> subscribers = new TreeMap<Long,Subscriber>();
 		try {
 			Workbook wb = WorkbookFactory.create(file);
@@ -64,13 +64,13 @@ public class ExcelJamesFile extends JamesFile {
 				}
 			}
 			return subscribers;
-		} catch(InvalidFormatException | IOException ioe) {
-			ioe.printStackTrace();
-			return subscribers; // TODO: This is probably empty. Throw exception instead?
+		} catch(InvalidFormatException ife) {
+			// If the file was badly formatted
+			throw new IOException(ife);
 		}
 	}
 
-	public void writeFile(Map<Long,Subscriber> subscribers, File file) {
+	public void writeFile(Map<Long,Subscriber> subscribers, File file) throws IOException {
 		// Create the workbook from file first
 		Workbook wb;
 		try {
@@ -116,12 +116,6 @@ public class ExcelJamesFile extends JamesFile {
 			j++;
 		}
 		
-		// Write out to file
-		try {
-			wb.write(new FileOutputStream(file));
-		} catch (IOException e) {
-			// TODO: Handle this...
-			e.printStackTrace();
-		}
+		wb.write(new FileOutputStream(file));
 	}
 }

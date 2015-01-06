@@ -42,10 +42,12 @@ public class SettingsDialog extends JDialog {
 	private JButton saveButton;
 	private JButton cancelButton;
 	
-	public SettingsDialog() {
+	public SettingsDialog(Settings current) {
 		super();
 		this.setResizable(false);
 		this.initComponents();
+		basePathField.setText(current.getBasePath().getAbsolutePath());
+		
 		this.pack();
 		this.setModalityType(java.awt.Dialog.ModalityType.APPLICATION_MODAL);
 		this.setLocationRelativeTo(null);

@@ -13,6 +13,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -58,7 +59,7 @@ public class James {
 		
 		jf.addPreferencesListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				final SettingsDialog sf = new SettingsDialog();
+				final SettingsDialog sf = new SettingsDialog(settings);
 				sf.addCancelListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						sf.setVisible(false);
@@ -70,7 +71,8 @@ public class James {
 						JOptionPane.showMessageDialog(jf, "Settings saved (not really)");
 						try {
 							Settings s = sf.getSettings();
-							settings.setBasePath(s.getBasePath());
+							// TODO: Check validity of path. Perhaps this should be done in 
+							// settings.setBasePath(s.getBasePath());
 							
 							sf.setVisible(false);
 							sf.dispose();
@@ -98,20 +100,28 @@ public class James {
 				jfc.setFileSelectionMode(JFileChooser.FILES_ONLY);
 				if(jfc.showOpenDialog(jf) == JFileChooser.APPROVE_OPTION) {
 					File f = jfc.getSelectedFile();
-					JamesFile imp = JamesFileFactory.createImportFile(f.getAbsolutePath());
-					Map<Long,Subscriber> noThanks = imp.readFile(f);
 					try {
+						JamesFile imp = JamesFileFactory.createImportFile(f.getAbsolutePath());
+						Map<Long,Subscriber> noThanks = imp.readFile(f);
+
 						Connection c = DBConnection.getConnection();
 						c.setAutoCommit(false);
+						int counter = 0;
 						for(long id : noThanks.keySet()) {
 							Statement st = c.createStatement();
-							st.executeUpdate("UPDATE DistributedBy SET Distributor='NONE' WHERE SubscriberID='"+id+"'");
+							counter += st.executeUpdate("INSERT OR REPLACE INTO DistributedBy VALUES('"+id+"', 'NONE')");
 						}
 						c.commit();
 						c.setAutoCommit(true);
-						JOptionPane.showConfirmDialog(jf, "NoThanks list read and subscribers updated");
+						String message = "NoThanks list read and " + counter + " subscribers updated";
+						JOptionPane.showMessageDialog(jf, message, "Update finished", JOptionPane.INFORMATION_MESSAGE);
 					} catch(SQLException sqle) {
-						
+						JOptionPane.showMessageDialog(jf, "Database error\n" + sqle.getMessage(), "Database error", JOptionPane.ERROR_MESSAGE);
+					} catch(IllegalArgumentException iae) {
+						String allowed = Arrays.toString(JamesFileFactory.allowedExt());
+						JOptionPane.showMessageDialog(jf, "Illegal file type.\nAllowed types are: "+allowed, "Illegal file type", JOptionPane.ERROR_MESSAGE);
+					} catch(IOException ioe) {
+						// Bad file, or IO error
 					}
 				}
 			}
@@ -134,8 +144,7 @@ public class James {
 						jf.disableAll();
 						master = null;
 					} catch(SQLException sqle) {
-						System.out.println("Database error: " + sqle.getMessage());
-						sqle.printStackTrace();
+						JOptionPane.showMessageDialog(jf, "Database error\n" + sqle.getMessage(), "Database error", JOptionPane.ERROR_MESSAGE);
 					}
 				}
 			}
@@ -149,8 +158,7 @@ public class James {
 						Connection c = DBConnection.getConnection();
 						c.close();
 					} catch(SQLException sqle) {
-						System.out.println("Database error: " + sqle.getMessage());
-						sqle.printStackTrace();
+						JOptionPane.showMessageDialog(jf, "Database error\n" + sqle.getMessage(), "Database error", JOptionPane.ERROR_MESSAGE);
 					} finally {
 						File db = settings.getDBPath();
 						if(db.delete() && DBConnection.createDatabase()) {
@@ -223,8 +231,7 @@ public class James {
 						}
 					}
 				} catch(SQLException sqle) {
-					System.out.println("Database error: " + sqle.getMessage());
-					sqle.printStackTrace();
+					JOptionPane.showMessageDialog(jf, "Database error\n" + sqle.getMessage(), "Database error", JOptionPane.ERROR_MESSAGE);
 				}
 			}
 		};
@@ -245,8 +252,7 @@ public class James {
 						}
 					}
 				} catch(SQLException sqle) {
-					System.out.println("Database error: " + sqle.getMessage());
-					sqle.printStackTrace();
+					JOptionPane.showMessageDialog(jf, "Database error\n" + sqle.getMessage(), "Database error", JOptionPane.ERROR_MESSAGE);
 				}
 			}
 		};
@@ -301,13 +307,13 @@ public class James {
 							   + "och " + nothanks + " som inte vill ha tidningen alls.");
 					
 				} catch(SQLException sqle) {
-					System.out.println("Database error: " + sqle.getMessage());
-					sqle.printStackTrace();
+					JOptionPane.showMessageDialog(jf, "Database error\n" + sqle.getMessage(), "Database error", JOptionPane.ERROR_MESSAGE);
 				}	
 		}
 		});
 		
 		// Export to VTD/TB
+		// TODO: Delivery date
 		jf.addVTDListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 		    	try {
@@ -320,8 +326,7 @@ public class James {
 		    			JOptionPane.showMessageDialog(jf, "Size of start: " + start.size() + "\nSize of stop: " + stop.size());
 		    		}
 		    	} catch(SQLException sqle) {
-		    		System.out.println("Database error: " + sqle.getMessage());
-					sqle.printStackTrace();
+					JOptionPane.showMessageDialog(jf, "Database error\n" + sqle.getMessage(), "Database error", JOptionPane.ERROR_MESSAGE);
 				}
 			}
 		});
@@ -339,8 +344,7 @@ public class James {
 		    			JOptionPane.showMessageDialog(jf, "Size of start: " + start.size() + "\nSize of stop: " + stop.size());
 		    		}
 		    	} catch(SQLException sqle) {
-		    		System.out.println("Database error: " + sqle.getMessage());
-					sqle.printStackTrace();
+					JOptionPane.showMessageDialog(jf, "Database error\n" + sqle.getMessage(), "Database error", JOptionPane.ERROR_MESSAGE);
 				}
 			}
 		});
@@ -357,8 +361,7 @@ public class James {
 					subs.addAll(vips);
 					exportSubscribers(subs);
 				} catch(SQLException sqle) {
-					System.out.println("Database error: " + sqle.getMessage());
-					sqle.printStackTrace();
+					JOptionPane.showMessageDialog(jf, "Database error\n" + sqle.getMessage(), "Database error", JOptionPane.ERROR_MESSAGE);
 				} catch(IOException ioe) {
 					System.out.println("I/O error: " + ioe.getMessage());
 					ioe.printStackTrace();
@@ -372,8 +375,7 @@ public class James {
 					List<Subscriber> subs = master.getVTABByDistributor(Distributor.BRING);
 					exportSubscribers(subs);
 				} catch(SQLException sqle) {
-					System.out.println("Database error: " + sqle.getMessage());
-					sqle.printStackTrace();
+					JOptionPane.showMessageDialog(jf, "Database error\n" + sqle.getMessage(), "Database error", JOptionPane.ERROR_MESSAGE);
 				} catch(IOException ioe) {
 					System.out.println("I/O error: " + ioe.getMessage());
 					ioe.printStackTrace();
@@ -389,8 +391,7 @@ public class James {
 					bringSubs.addAll(vipSubs);
 					exportSubscribers(bringSubs);
 				} catch(SQLException sqle) {
-					System.out.println("Database error: " + sqle.getMessage());
-					sqle.printStackTrace();
+					JOptionPane.showMessageDialog(jf, "Database error\n" + sqle.getMessage(), "Database error", JOptionPane.ERROR_MESSAGE);
 				} catch(IOException ioe) {
 					System.out.println("I/O error: " + ioe.getMessage());
 					ioe.printStackTrace();
@@ -404,7 +405,7 @@ public class James {
 					List<Subscriber> vipSubs = master.getVTABVIP();
 					exportSubscribers(vipSubs);
 				} catch(SQLException sqle) {
-					System.out.println("Database error: " + sqle.getMessage());
+					JOptionPane.showMessageDialog(jf, "Database error\n" + sqle.getMessage(), "Database error", JOptionPane.ERROR_MESSAGE);
 				} catch(IOException ioe) {
 					System.out.println("I/O error: " + ioe.getMessage());
 				}
@@ -425,7 +426,7 @@ public class James {
 						int rows = st.executeUpdate(sql);
 						JOptionPane.showMessageDialog(jf, "OK, updated " + rows + " entries", "Success", JOptionPane.INFORMATION_MESSAGE);
 					} catch(SQLException sqle) {
-						// TODO: Handle this
+						JOptionPane.showMessageDialog(jf, "Database error\n" + sqle.getMessage(), "Database error", JOptionPane.ERROR_MESSAGE);
 					} catch(NumberFormatException nfe) {
 						JOptionPane.showMessageDialog(jf, "Only numerical SubscriberIDs are valid", "Invalid ID", JOptionPane.ERROR_MESSAGE);
 					}
@@ -435,15 +436,54 @@ public class James {
 		
 		jf.addVTDMissListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-					// This is independent on issue
-					/*
+				JFileChooser jfc = new JFileChooser();
+				jfc.setMultiSelectionEnabled(false);
+				jfc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+				if(jfc.showOpenDialog(jf) == JFileChooser.APPROVE_OPTION) {
+					File f = jfc.getSelectedFile();
 					try {
-						if(!guitest) VTD_NoFind.registerFromList(year, issue);
-						jf.enableVTab();
+						JamesFile imp = JamesFileFactory.createImportFile(f.getAbsolutePath());
+						Map<Long,Subscriber> noThanks = imp.readFile(f);
+
+						Connection c = DBConnection.getConnection();
+						c.setAutoCommit(false);
+						int counter = 0;
+						for(long id : noThanks.keySet()) {
+							Statement st = c.createStatement();
+							
+							// TODO: Define this globally somewhere. DBConnection?
+							String order = "CASE Distributor WHEN 'VTD' THEN 1 WHEN 'TB' THEN 2 "
+									 	 + "WHEN 'BRING' THEN 3 WHEN 'POSTEN' THEN 4 WHEN 'NONE' THEN 5 END";
+						
+							String sql = "INSERT OR REPLACE INTO DistributedBy (SubscriberID, Distributor) "
+									   + "SELECT SubscriberID, Distributor FROM Subscribers NATURAL JOIN Filter "
+									   + "WHERE SubscriberID = '" + id + "' AND Distributor IS NOT 'VTD' "
+									   + "ORDER BY " + order + " LIMIT 1";
+							
+							int rows = st.executeUpdate(sql);
+							counter += rows;
+							if(rows == 0) { // Then we need to ship this with Posten
+								String postsql = "INSERT OR REPLACE INTO DistributedBy(SubscriberID, Distributor) "
+											   + "VALUES(" + id + ", 'POSTEN')";
+								Statement pst = c.createStatement();
+								rows = pst.executeUpdate(postsql);
+								counter += rows;
+							}
+						}
+						c.commit();
+						c.setAutoCommit(true);
+						String message = "VTD miss-list read and " + counter + " subscribers updated";
+						JOptionPane.showMessageDialog(jf, message, "Update finished", JOptionPane.INFORMATION_MESSAGE);
+					} catch(SQLException sqle) {
+						JOptionPane.showMessageDialog(jf, "Database error\n" + sqle.getMessage(), "Database error", JOptionPane.ERROR_MESSAGE);
+					} catch(IllegalArgumentException iae) {
+						String allowed = Arrays.toString(JamesFileFactory.allowedExt());
+						JOptionPane.showMessageDialog(jf, "Illegal file type.\nAllowed types are: "+allowed, "Illegal file type", JOptionPane.ERROR_MESSAGE);
 					} catch(IOException ioe) {
-						ioe.printStackTrace();
+						// Bad file, or IO error
+						// TODO: 
 					}
-					*/
+				}
 			}
 		});
 		
@@ -456,6 +496,7 @@ public class James {
 					try {
 						long subid = Long.parseLong(val);
 						Connection c = DBConnection.getConnection();
+						c.setAutoCommit(false);
 						Statement st = c.createStatement();
 						String order = "CASE Distributor WHEN 'VTD' THEN 1 WHEN 'TB' THEN 2 "
 									 + "WHEN 'BRING' THEN 3 WHEN 'POSTEN' THEN 4 WHEN 'NONE' THEN 5 END";
@@ -474,7 +515,7 @@ public class James {
 						}
 						JOptionPane.showMessageDialog(jf, "OK, updated " + rows + " entries", "Success", JOptionPane.INFORMATION_MESSAGE);
 					} catch(SQLException sqle) {
-						// TODO: Handle this
+						JOptionPane.showMessageDialog(jf, "Database error\n" + sqle.getMessage(), "Database error", JOptionPane.ERROR_MESSAGE);
 					} catch(NumberFormatException nfe) {
 						JOptionPane.showMessageDialog(jf, "Only numerical SubscriberIDs are valid", "Invalid ID", JOptionPane.ERROR_MESSAGE);
 					}

@@ -198,8 +198,8 @@ public class JamesFrame extends JFrame {
 		vtabPanel.setLayout(new GridBagLayout());
 		komplettButton = new JButton("Complete");
 		bringOnlyButton = new JButton("Only Bring");
-		bringSpecialButton = new JButton("Bring + Special");
-		postenOnlyButton = new JButton("Only Posten");
+		bringSpecialButton = new JButton("Bring + VIP");
+		postenOnlyButton = new JButton("Only VIP");
 		c.gridx = 0;
 		c.gridy = 0;
 		vtabPanel.add(komplettButton, c);
