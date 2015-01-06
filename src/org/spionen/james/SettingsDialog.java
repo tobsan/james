@@ -14,7 +14,6 @@ import javax.swing.JTextField;
 
 /**
  * A view class to represent the settings/preferences dialog
- * TODO: How to communicate result of this dialog back?
  * 
  * @author Tobias Olausson
  *

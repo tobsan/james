@@ -162,9 +162,6 @@ public class MasterFile implements Serializable {
 	    		stmt2.setString(2, String.valueOf(year));
 	    		stmt2.setString(3, String.valueOf(issue));
 	    		stmt2.addBatch();
-    		} else {
-    			// TODO: Save data on invalid addresses?
-    			// System.out.println(s.toString());
     		}
     	}
 		stmt.executeBatch();
@@ -196,9 +193,6 @@ public class MasterFile implements Serializable {
 	 * Runs filters for new subscribers. In fact this can be run any time
 	 * since only subscribers that are not already present in the DistributedBy
 	 * table will be added, and only if they match a filter. 
-	 * 
-	 * Currently, this means that subscribers that are to be distributed by Posten,
-	 * or not at all (NoThanks) are not covered by this function.
 	 *   
 	 * @throws SQLException if a database error occurs
 	 */
@@ -344,9 +338,8 @@ public class MasterFile implements Serializable {
 		String sql = "INSERT OR REPLACE INTO DistributedBy (SubscriberID, Distributor) "
 				   + "SELECT SubscriberID, 'NONE' FROM Subscribers NATURAL JOIN DistributedTo WHERE "
 				   + "IssueYear = " + year + " AND IssueNumber = " + issue + " AND "
-				   + "length(SubscriberID) < 6 AND "
-				   + "Substr(ZipCode,1,2) < '"+minZip+"' AND "
-				   + "Substr(ZipCode,1,2) > '"+maxZip+"'";
+				   + "length(SubscriberID) > 5 AND "
+				   + "(Substr(ZipCode,1,2) < '"+minZip+"' OR Substr(ZipCode,1,2) > '"+maxZip+"')";
 		st.executeUpdate(sql);
 	}
 
