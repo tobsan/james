@@ -240,7 +240,6 @@ public class MasterFile implements Serializable {
 	 * We should try to find the latest before the current, if one exists.
 	 */
 			
-	// TODO: Limit to a single distributor
 	public ArrayList<Subscriber> getStart(Distributor d) throws SQLException {
 		MasterFile prev = previousIssue();
 		if (prev.load()) {

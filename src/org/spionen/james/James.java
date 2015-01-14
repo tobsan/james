@@ -2,8 +2,8 @@ package org.spionen.james;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -13,7 +13,9 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -25,6 +27,8 @@ import org.spionen.james.jamesfile.JamesFile;
 import org.spionen.james.jamesfile.JamesFileFactory;
 import org.spionen.james.subscriber.Subscriber;
 import org.spionen.james.subscriber.Subscriber.Distributor;
+import org.spionen.james.subscriber.TBSubscriber;
+import org.spionen.james.subscriber.VTDSubscriber;
 
 /**
  * This is the controller class for James
@@ -121,7 +125,7 @@ public class James {
 						String allowed = Arrays.toString(JamesFileFactory.allowedExt());
 						JOptionPane.showMessageDialog(jf, "Illegal file type.\nAllowed types are: "+allowed, "Illegal file type", JOptionPane.ERROR_MESSAGE);
 					} catch(IOException ioe) {
-						// Bad file, or IO error
+						JOptionPane.showMessageDialog(jf, "Input/Output error\n" + ioe.getMessage(), "I/O error", JOptionPane.ERROR_MESSAGE);
 					}
 				}
 			}
@@ -174,7 +178,7 @@ public class James {
 		});
 		
 		// Double-clicking on the logo resets the program state
-		jf.addJamesLogoListener(new MouseListener() {
+		jf.addJamesLogoListener(new MouseAdapter() {
 			public void mouseClicked(MouseEvent me) {
 				if(me.getClickCount() == 2) {
 					jf.disableAll();
@@ -182,12 +186,6 @@ public class James {
 				}
 				
 			}
-
-			public void mouseEntered(MouseEvent arg0) {	}
-			public void mouseExited(MouseEvent arg0) { }
-			public void mousePressed(MouseEvent arg0) { }
-			public void mouseReleased(MouseEvent arg0) { }
-			
 		});
 
 		final CreateIssueListener createListener = new CreateIssueListener() {
@@ -312,39 +310,40 @@ public class James {
 		}
 		});
 		
-		// Export to VTD/TB
-		// TODO: Delivery date
+		// Export to VTD
 		jf.addVTDListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-		    	try {
-		    		List<Subscriber> start = master.getStart(Distributor.VTD);
-		    		List<Subscriber> stop = master.getStop(Distributor.VTD);
-			    	
-		    		if(start == null || stop == null) {
-		    			JOptionPane.showMessageDialog(jf, "Could not find the previous issue to get start/stop list", "Previous issue missing", JOptionPane.ERROR_MESSAGE);
-		    		} else {
-		    			JOptionPane.showMessageDialog(jf, "Size of start: " + start.size() + "\nSize of stop: " + stop.size());
-		    		}
-		    	} catch(SQLException sqle) {
-					JOptionPane.showMessageDialog(jf, "Database error\n" + sqle.getMessage(), "Database error", JOptionPane.ERROR_MESSAGE);
+				final String distributionDate = getDistributionDate();
+				if(distributionDate != null) {
+					exportByDistributor(Distributor.VTD, new SubscriberPrinter() {
+	    				public String print(Subscriber s) {
+	    					VTDSubscriber vts = new VTDSubscriber(s);
+	    					return vts.toString();
+	    				}
+	    			});
 				}
 			}
 		});
 		
-		// TODO: Delivery date 
+		// Export to TB
 		jf.addTBListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				try {
-		    		List<Subscriber> start = master.getStart(Distributor.TB);
-		    		List<Subscriber> stop = master.getStop(Distributor.TB);
-			    	
-		    		if(start == null || stop == null) {
-		    			JOptionPane.showMessageDialog(jf, "Could not find the previous issue to get start/stop list", "Previous issue missing", JOptionPane.ERROR_MESSAGE);
-		    		} else {
-		    			JOptionPane.showMessageDialog(jf, "Size of start: " + start.size() + "\nSize of stop: " + stop.size());
-		    		}
-		    	} catch(SQLException sqle) {
-					JOptionPane.showMessageDialog(jf, "Database error\n" + sqle.getMessage(), "Database error", JOptionPane.ERROR_MESSAGE);
+				final String distributionDate = getDistributionDate();
+				if(distributionDate != null) {
+					exportByDistributor(Distributor.TB, new SubscriberPrinter() {
+	    				public String print(Subscriber s) {
+	    					String prefix = "A100"; // START is default, as mentioned above
+	    					if(s.getNote() == "STOP") {
+	    						prefix = "A101";
+	    					}
+	    	                String transaktionTS = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
+	    	                String testKod = "  ";
+	    	                String line = "0005             " + distributionDate + transaktionTS + " SPI0VTD" + testKod +"           ";
+	    	                
+	    	                TBSubscriber tb = new TBSubscriber(s);
+	    	                return prefix + line + tb.toString();
+	    				}
+	    			});
 				}
 			}
 		});
@@ -359,11 +358,15 @@ public class James {
 					subs.addAll(brings);
 					subs.addAll(tbs);
 					subs.addAll(vips);
-					exportSubscribers(subs);
+					exportSubscribers(subs, new SubscriberPrinter() {
+						public String print(Subscriber s) {
+							return s.toString();
+						}
+					});
 				} catch(SQLException sqle) {
 					JOptionPane.showMessageDialog(jf, "Database error\n" + sqle.getMessage(), "Database error", JOptionPane.ERROR_MESSAGE);
 				} catch(IOException ioe) {
-					System.out.println("I/O error: " + ioe.getMessage());
+					JOptionPane.showMessageDialog(jf, "Input/Output error\n" + ioe.getMessage(), "I/O error", JOptionPane.ERROR_MESSAGE);
 					ioe.printStackTrace();
 				}
 			}
@@ -373,11 +376,15 @@ public class James {
 			public void actionPerformed(ActionEvent e) {
 				try {
 					List<Subscriber> subs = master.getVTABByDistributor(Distributor.BRING);
-					exportSubscribers(subs);
+					exportSubscribers(subs, new SubscriberPrinter() {
+						public String print(Subscriber s) {
+							return s.toString();
+						}
+					});
 				} catch(SQLException sqle) {
 					JOptionPane.showMessageDialog(jf, "Database error\n" + sqle.getMessage(), "Database error", JOptionPane.ERROR_MESSAGE);
 				} catch(IOException ioe) {
-					System.out.println("I/O error: " + ioe.getMessage());
+					JOptionPane.showMessageDialog(jf, "Input/Output error\n" + ioe.getMessage(), "I/O error", JOptionPane.ERROR_MESSAGE);
 					ioe.printStackTrace();
 				}
 			}
@@ -389,11 +396,15 @@ public class James {
 					List<Subscriber> bringSubs = master.getVTABByDistributor(Distributor.BRING);
 					List<Subscriber> vipSubs = master.getVTABVIP();
 					bringSubs.addAll(vipSubs);
-					exportSubscribers(bringSubs);
+					exportSubscribers(bringSubs, new SubscriberPrinter() {
+						public String print(Subscriber s) {
+							return s.toString();
+						}
+					});
 				} catch(SQLException sqle) {
 					JOptionPane.showMessageDialog(jf, "Database error\n" + sqle.getMessage(), "Database error", JOptionPane.ERROR_MESSAGE);
 				} catch(IOException ioe) {
-					System.out.println("I/O error: " + ioe.getMessage());
+					JOptionPane.showMessageDialog(jf, "Input/Output error\n" + ioe.getMessage(), "I/O error", JOptionPane.ERROR_MESSAGE);
 					ioe.printStackTrace();
 				}
 			}
@@ -403,11 +414,16 @@ public class James {
 			public void actionPerformed(ActionEvent e) {
 				try {
 					List<Subscriber> vipSubs = master.getVTABVIP();
-					exportSubscribers(vipSubs);
+					exportSubscribers(vipSubs, new SubscriberPrinter() {
+						public String print(Subscriber s) {
+							return s.toString();
+						}
+					});
 				} catch(SQLException sqle) {
 					JOptionPane.showMessageDialog(jf, "Database error\n" + sqle.getMessage(), "Database error", JOptionPane.ERROR_MESSAGE);
 				} catch(IOException ioe) {
-					System.out.println("I/O error: " + ioe.getMessage());
+					JOptionPane.showMessageDialog(jf, "Input/Output error\n" + ioe.getMessage(), "I/O error", JOptionPane.ERROR_MESSAGE);
+					ioe.printStackTrace();
 				}
 			}
 		});
@@ -480,8 +496,8 @@ public class James {
 						String allowed = Arrays.toString(JamesFileFactory.allowedExt());
 						JOptionPane.showMessageDialog(jf, "Illegal file type.\nAllowed types are: "+allowed, "Illegal file type", JOptionPane.ERROR_MESSAGE);
 					} catch(IOException ioe) {
-						// Bad file, or IO error
-						// TODO: 
+						JOptionPane.showMessageDialog(jf, "Input/Output error\n" + ioe.getMessage(), "I/O error", JOptionPane.ERROR_MESSAGE);
+						ioe.printStackTrace();
 					}
 				}
 			}
@@ -524,27 +540,97 @@ public class James {
 		});
 	}
 	
-	// TODO: Check for overwriting of file
-	// See: http://stackoverflow.com/questions/13738625/jfilechooser-custom-file-name-create-new-file
-	public void exportSubscribers(List<Subscriber> subs) throws IOException {
+	/**
+	 * Prompts the user for a distribution date on ISO8601 format (YYYY-MM-DD)
+	 * and validates a bit that it is a valid date.
+	 * @return a String representation of the date (YYYYMMDD), or null if the user canceled
+	 * 
+	 * TODO: Use some kind of real date validation instead
+	 * TODO: Make a nicer prompt.
+	 */
+	private String getDistributionDate() {
+		String dateString = "";
+		boolean okDate = false;
+		while(!okDate && dateString != null) {
+			dateString = JOptionPane.showInputDialog(jf, "Distribution date (YYYY-MM-DD)");
+			if(dateString != null) {
+				try {
+					String[] parts = dateString.split("-");
+					if(parts.length == 3 && parts[0].length() == 4 && parts[1].length() == 2 && parts[2].length() == 2) {
+						int year = Integer.parseInt(parts[0]);
+						int month = Integer.parseInt(parts[1]);
+						int day = Integer.parseInt(parts[2]);
+						if(year > 1999 && month > 0 && month <= 12 && day > 0 && day <= 31) {
+							dateString = "" + year + month + day + "000000";
+							okDate = true;
+						}
+					}
+				} catch(NumberFormatException nfe) {
+					dateString = "";
+				}
+			}
+		}
+		return dateString;
+	}
+	
+	/**
+	 * Exports a start/stop-list for some distributor to a text file.
+	 * @param d the distributor to use
+	 * @param sp the interface for printing each subscriber.
+	 * 
+	 */
+	private void exportByDistributor(Distributor d, SubscriberPrinter sp) {
+    	try {
+    		List<Subscriber> start = master.getStart(d);
+    		List<Subscriber> stop = master.getStop(d);
+    		
+    		if(start == null && stop == null) {
+    			JOptionPane.showMessageDialog(jf, "Could not find the previous issue to get start/stop list", "Previous issue missing", JOptionPane.ERROR_MESSAGE);
+    		} else if (start == null || stop == null) {
+    			JOptionPane.showMessageDialog(jf, "Error when getting start/stop list", "Start/Stop null", JOptionPane.ERROR_MESSAGE);
+    		} else {
+    			// If it's not a STOP it is a START
+    			for(Subscriber s : stop) {
+	    			s.setNote("STOP");
+	    		}
+    			start.addAll(stop);
+    			exportSubscribers(start, sp);
+    			JOptionPane.showMessageDialog(jf, "Size of start: " + start.size() + "\nSize of stop: " + stop.size());
+    		}
+    	} catch(SQLException sqle) {
+			JOptionPane.showMessageDialog(jf, "Database error\n" + sqle.getMessage(), "Database error", JOptionPane.ERROR_MESSAGE);
+		} catch(IOException ioe) {
+			JOptionPane.showMessageDialog(jf, "Input/Output error\n" + ioe.getMessage(), "I/O error", JOptionPane.ERROR_MESSAGE);
+		}
+	}
+	
+	/**
+	 * Export a list of subscribers to file, formatted using a provided interface
+	 * @param subs the list of subscribers
+	 * @param sp the interface for printing each subscriber
+	 * @throws IOException if an I/O error occurs
+	 */
+	private void exportSubscribers(List<Subscriber> subs, SubscriberPrinter sp) throws IOException {
 		JFileChooser jfc = new JFileChooser();
 		jfc.setFileSelectionMode(JFileChooser.FILES_ONLY);
 		int returnVal = jfc.showSaveDialog(jf);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
         	File file = jfc.getSelectedFile();
-            if(!file.exists() && !file.createNewFile() ) {
-            	JOptionPane.showMessageDialog(jf,"Can't create new file, try again");
-            } else if(!file.canWrite()) {
-            	JOptionPane.showMessageDialog(jf,"Unable to write to that file");
-            } else {
-                PrintWriter outFile = new PrintWriter(new BufferedWriter(new FileWriter(file)));
-                for(Subscriber s : subs) {
-                	outFile.println(s.toString());
-                }
-                outFile.flush();
-                outFile.close();
-            	JOptionPane.showMessageDialog(jf,"Exported " + subs.size() + " subscribers to file successful!");
-            }
+        	if(file.exists() && JOptionPane.showConfirmDialog(jf, "File exists, overwrite?") == JOptionPane.OK_OPTION) {
+	        	if(!file.exists() && !file.createNewFile() ) {
+	            	JOptionPane.showMessageDialog(jf,"Can't create new file, try again");
+	            } else if(!file.canWrite()) {
+	            	JOptionPane.showMessageDialog(jf,"Unable to write to that file");
+	            } else {
+	                PrintWriter outFile = new PrintWriter(new BufferedWriter(new FileWriter(file)));
+	                for(Subscriber s : subs) {
+	                	outFile.println(sp.print(s));
+	                }
+	                outFile.flush();
+	                outFile.close();
+	            	JOptionPane.showMessageDialog(jf,"Exported " + subs.size() + " subscribers to file successful!");
+	            }
+        	}
         }
 	}
 }
