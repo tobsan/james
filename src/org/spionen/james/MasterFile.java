@@ -235,14 +235,9 @@ public class MasterFile implements Serializable {
 		c.setAutoCommit(true);
 	}
 	
-	/* TODO: The latest issue is not neccessarily the previous one.
-	 * There could be a hole in case of digital distribution.
-	 * We should try to find the latest before the current, if one exists.
-	 */
-			
 	public ArrayList<Subscriber> getStart(Distributor d) throws SQLException {
 		MasterFile prev = previousIssue();
-		if (prev.load()) {
+		if (prev != null && prev.load()) {
 			String subPrevious = 
 						 "SELECT SubscriberID FROM DistributedTo WHERE " 
 					   + "IssueYear = " + prev.getYear() 
@@ -268,7 +263,7 @@ public class MasterFile implements Serializable {
 	
 	public ArrayList<Subscriber> getStop(Distributor d) throws SQLException {
 		MasterFile prev = previousIssue();
-		if (prev.load()) {
+		if (prev != null && prev.load()) {
 			
 			String subCurrent = 
 					 "SELECT SubscriberID FROM DistributedTo WHERE " 
@@ -328,8 +323,8 @@ public class MasterFile implements Serializable {
 	}
 	
 	public void runGeographicalfilter() throws SQLException {
-		int minZip = 40;
-		int maxZip = 54;
+		int minZip = 40; // 40xxx zipcodes
+		int maxZip = 54; // 54xxx zipcodes
 		Connection c = DBConnection.getConnection();
 		Statement st = c.createStatement();
 		// All non-VIPs that live outside minZip* through maxZip* zipCodes are filtered
@@ -345,20 +340,30 @@ public class MasterFile implements Serializable {
     public int getYear() { return year; }
     public int getIssue() { return issue; }
     
-    public MasterFile nextIssue() {
-        if (issue < 8) {
-        	return new MasterFile(year, issue+1);
-        } else {
-        	return new MasterFile(year+1, 1);
-        }
+    public MasterFile previousIssue() throws SQLException {
+		Connection c = DBConnection.getConnection();
+		Statement st = c.createStatement();
+		String sql = "SELECT * FROM Issues ORDER BY IssueYear, IssueNumber DESC";
+		ResultSet rs = st.executeQuery(sql);
+		while(rs.next()) {
+			if(rs.getInt("IssueYear") == year && rs.getInt("IssueNumber") == issue) {
+				if(rs.next()) {
+					int pYear = rs.getInt("IssueYear");
+					int pIssue = rs.getInt("IssueNumber");
+					return new MasterFile(pYear, pIssue);
+				}
+				return null;
+			}
+		}
+		return null;
     }
     
-    public MasterFile previousIssue() {
-        if (issue > 1) {
-        	return new MasterFile(year, issue-1);
-        } else {
-        	return new MasterFile(year-1, 8);
-        }
+    public boolean equals(Object anotherObject) {
+    	if(anotherObject != null && anotherObject instanceof MasterFile) {
+    		MasterFile m = (MasterFile)anotherObject;
+    		return m.getYear() == year && m.getIssue() == issue;
+    	}
+    	return false;
     }
     
 }
