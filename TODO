@@ -9,3 +9,6 @@
   exempt from this limit. An example implementation exists in MasterFile.java.
 * A nicer separation of functions beloning to a specific issue (MasterFile.java)
   and those that are global to the program (DBConnection.java, perhaps?)
+* Become more robust wrt erroneous source material to James. 
+* Add an option to remove an issue entirely
+* Add an option to add source material to an issue after the initial creation
