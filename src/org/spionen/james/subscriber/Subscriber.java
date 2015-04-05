@@ -20,7 +20,7 @@ package org.spionen.james.subscriber;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-
+import java.util.Locale;
 import org.spionen.james.jamesfile.FieldType;
 
 public class Subscriber implements Comparable<Subscriber> {
@@ -61,7 +61,7 @@ public class Subscriber implements Comparable<Subscriber> {
     
     private String cleanString(String data) {
     	if(data != null) {
-    		return data.replaceAll("\n|\r", "");
+    		return data.replaceAll("\n|\r", "").toUpperCase(new Locale("sv","SE"));
     	} else {
     		return null;
     	}
@@ -118,6 +118,8 @@ public class Subscriber implements Comparable<Subscriber> {
 	public void setZipCode(String zipCode) {
 		if(zipCode != null) {
 			this.zipCode = zipCode.replaceAll(" ", "");
+			this.zipCode = this.zipCode.replaceAll("-", "");
+			this.zipCode = this.zipCode.replaceAll("SE","");
 		}
 	}
 
@@ -244,7 +246,7 @@ public class Subscriber implements Comparable<Subscriber> {
 	            return false;
 	        } else if (country == null || country.equals("")) {
                 return true;
-            } else if (country.equals("SVERIGE") || country.equals("SWEDEN")) {
+            } else if (country.equalsIgnoreCase("SVERIGE") || country.equalsIgnoreCase("SWEDEN")) {
                 return true;
             } else if (streetAddress.length() == 0) {
             	note = "Adress saknas";

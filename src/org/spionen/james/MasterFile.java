@@ -44,8 +44,6 @@ import org.spionen.james.subscriber.Subscriber.Distributor;
  * This is the model class for James. It handles communication with the
  * database and holds the year and number for the issue we're working on.
  * 
- * TODO: Enforce the use of createIssue() && save() as one atomic operation
- * 
  * @author Maxim Fris
  * @author Tobias Olausson
  */

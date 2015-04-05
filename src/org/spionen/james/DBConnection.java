@@ -26,7 +26,19 @@ import java.io.InputStreamReader;
 import java.sql.*;
 
 public class DBConnection {
-	 
+
+	/**
+	 * An SQL ORDER BY clause to order distributors in order of preference.
+	 * VTD -> TB -> Bring -> Posten -> None
+	 *
+	 * This is used in case one zipcode is covered by several distributors.
+	 * The most common case for that is VTD/Bring and TB/Bring. Since both
+	 * VTD and TB are cheaper than Bring, we prefer them.
+	 */
+	public final static String distOrder =
+			"CASE Distributor WHEN 'VTD' THEN 1 WHEN 'TB' THEN 2 "
+		  + "WHEN 'BRING' THEN 3 WHEN 'POSTEN' THEN 4 WHEN 'NONE' THEN 5 END";
+
 	private static Connection c;
 	private static String dbfile;
 	

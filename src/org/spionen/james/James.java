@@ -333,12 +333,7 @@ public class James {
 			public void actionPerformed(ActionEvent e) {
 				final String distributionDate = getDistributionDate();
 				if(distributionDate != null) {
-					exportByDistributor(Distributor.VTD, new SubscriberPrinter() {
-	    				public String print(Subscriber s) {
-	    					VTDSubscriber vts = new VTDSubscriber(s);
-	    					return vts.toString();
-	    				}
-	    			});
+					exportByDistributor(Distributor.VTD, getTBFormat(distributionDate));
 				}
 			}
 		});
@@ -348,23 +343,12 @@ public class James {
 			public void actionPerformed(ActionEvent e) {
 				final String distributionDate = getDistributionDate();
 				if(distributionDate != null) {
-					exportByDistributor(Distributor.TB, new SubscriberPrinter() {
-	    				public String print(Subscriber s) {
-	    					String prefix = "A100"; // START is default, as mentioned above
-	    					if(s.getNote() == "STOP") {
-	    						prefix = "A101";
-	    					}
-	    	                String transaktionTS = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
-	    	                String testKod = "  ";
-	    	                String line = "0005             " + distributionDate + transaktionTS + " SPI0VTD" + testKod +"           ";
-	    	                
-	    	                TBSubscriber tb = new TBSubscriber(s);
-	    	                return prefix + line + tb.toString();
-	    				}
-	    			});
+					exportByDistributor(Distributor.TB, getTBFormat(distributionDate));
 				}
 			}
 		});
+		
+		// Exports to VTAB below
 		
 		jf.addKomplettListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -449,7 +433,7 @@ public class James {
 		jf.addRemoveListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				String text = "Input SubscriberID.\nThis is either 10 digits (for LADOK entries)" 
-							+ " or 5 digits for (VIP entries).";
+							+ " or 5 digits (for VIP entries).";
 				String val = JOptionPane.showInputDialog(jf, text);
 				if(val != null && !val.equalsIgnoreCase("")) {
 					try {
@@ -485,14 +469,10 @@ public class James {
 						for(long id : noThanks.keySet()) {
 							Statement st = c.createStatement();
 							
-							// TODO: Define this globally somewhere. DBConnection?
-							String order = "CASE Distributor WHEN 'VTD' THEN 1 WHEN 'TB' THEN 2 "
-									 	 + "WHEN 'BRING' THEN 3 WHEN 'POSTEN' THEN 4 WHEN 'NONE' THEN 5 END";
-						
 							String sql = "INSERT OR REPLACE INTO DistributedBy (SubscriberID, Distributor) "
 									   + "SELECT SubscriberID, Distributor FROM Subscribers NATURAL JOIN Filter "
 									   + "WHERE SubscriberID = '" + id + "' AND Distributor IS NOT 'VTD' "
-									   + "ORDER BY " + order + " LIMIT 1";
+									   + "ORDER BY " + DBConnection.distOrder + " LIMIT 1";
 							
 							int rows = st.executeUpdate(sql);
 							counter += rows;
@@ -532,13 +512,11 @@ public class James {
 						Connection c = DBConnection.getConnection();
 						c.setAutoCommit(false);
 						Statement st = c.createStatement();
-						String order = "CASE Distributor WHEN 'VTD' THEN 1 WHEN 'TB' THEN 2 "
-									 + "WHEN 'BRING' THEN 3 WHEN 'POSTEN' THEN 4 WHEN 'NONE' THEN 5 END";
 						
 						String sql = "INSERT OR REPLACE INTO DistributedBy (SubscriberID, Distributor) "
 								   + "SELECT SubscriberID, Distributor FROM Subscribers NATURAL JOIN Filter "
 								   + "WHERE SubscriberID = '" + subid + "' AND Distributor IS NOT 'VTD' "
-								   + "ORDER BY " + order + " LIMIT 1";
+								   + "ORDER BY " + DBConnection.distOrder + " LIMIT 1";
 						
 						int rows = st.executeUpdate(sql);
 						if(rows == 0) { // Then we need to ship this with Posten
@@ -591,6 +569,23 @@ public class James {
 		return dateString;
 	}
 	
+	private SubscriberPrinter getTBFormat(final String distributionDate) {
+		return new SubscriberPrinter() {
+			public String print(Subscriber s) {
+				String prefix = "A100"; // START is default, as mentioned above
+				if(s.getNote() == "STOP") {
+					prefix = "A101";
+				}
+                String transaktionTS = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
+                String testKod = "  ";
+                String line = "0005             " + distributionDate + transaktionTS + " SPI0VTD" + testKod +"           ";
+
+                TBSubscriber tb = new TBSubscriber(s);
+                return prefix + line + tb.toString();
+			}
+		};
+	}
+
 	/**
 	 * Exports a start/stop-list for some distributor to a text file.
 	 * @param d the distributor to use
